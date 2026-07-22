@@ -1,9 +1,11 @@
 # REQUIREMENTS — ระบบบริหารการเงินส่วนบุคคล
 
-> **สถานะ: FROZEN v1.0** · วันที่ freeze: 21 ก.ค. 2569
+> **สถานะ: FROZEN v1.1** · freeze v1.0: 21 ก.ค. 2569 · แก้ v1.1: 21 ก.ค. 2569
 > เอกสารนี้คือ source of truth หลักของโปรเจกต์ ทุกแชตอ่านไฟล์นี้ก่อนเริ่มงาน
 > การแก้ requirement ทำได้เฉพาะผ่านการตกลงในแชตเก็บ requirement เท่านั้น
 > คู่กับ `docs/PROJECT_BIBLE.md` (ธรรมนูญ workflow + tech + โปรโตคอลแยกแชต)
+>
+> **Changelog:** v1.1 — เพิ่ม §8.1 mobile-first + PWA เป็น requirement หลัก, เพิ่ม PWA ใน tech stack
 
 ---
 
@@ -28,6 +30,7 @@
 | ที่อยู่ของ logic บัญชี | **Postgres** (constraint + trigger + view + function) | DB บังคับ balance เอง งบเป็น view คำนวณสด |
 | หน่วยเงิน | **bigint หน่วยสตางค์** | ห้าม float กันปัดเศษ |
 | Charts | Recharts | dashboard + กราฟ |
+| แพลตฟอร์ม | **responsive web + PWA** (vite-plugin-pwa) | codebase เดียว ใช้ทั้งมือถือ/desktop, ติดตั้งลง home screen ได้ |
 
 ## 3. โดเมนโมเดลแกน
 
@@ -158,6 +161,13 @@ Flow: ledger สะสมเงินได้ตามปีภาษี → �
 - smart defaults + template seed (COA + รายการประจำยอดนิยม)
 - inline validation บอกวิธีแก้
 - dropdown ความถี่ใช้ชื่อ (รายเดือน/ราย 3 เดือน/...) ไม่ให้กรอก "ทุก N เดือน"
+
+### 8.1 Mobile-first + responsive (requirement หลัก)
+- ระบบเป็น **responsive web app + PWA** — ใช้ผ่าน browser มือถือได้ทันที + ติดตั้งลง home screen ใช้เหมือนแอปจริง (codebase เดียว ไม่ทำ native แยก)
+- **ออกแบบ mobile-first สำหรับการบันทึกรายการ** (action ถี่สุด เกิดตอนอยู่นอกบ้าน): ปุ่มใหญ่ระดับนิ้วโป้ง, ฟอร์มสั้น, bottom navigation + ปุ่มลอย (FAB) "เพิ่มรายการ"
+- **จอวิเคราะห์เชิงลึก** (งบ 3 รายการ, budget schedule ตาราง B, projection matrix) รองรับทั้งมือถือ/desktop แต่เหมาะกับจอใหญ่โดยธรรมชาติ
+- **ตารางกว้างบนมือถือ** ต้องมี 2 โหมด: จอใหญ่ = ตารางเต็ม, จอเล็ก = card view หรือ เลื่อนแนวนอน + ตรึงคอลัมน์แรก (sticky first column)
+- PWA scaffold (manifest + service worker) ตั้งค่าใน C1 หรือ C2
 
 ## 9. Non-goals (ตัดออกชัดเจน)
 - แนบไฟล์ใบเสร็จ (M9)
