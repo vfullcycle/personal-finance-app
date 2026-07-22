@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>App icon — balance scale</title>
+  <desc>ไอคอนแอปบริหารการเงินส่วนบุคคล: ตราชั่งสมดุลสีขาวบนพื้นเขียวเข้ม สื่อถึงบัญชีคู่</desc>
+  <rect width="512" height="512" rx="112" fill="#0F6E56"/>
+  <g fill="#ffffff">
+    <circle cx="256" cy="150" r="11"/>
+    <rect x="248" y="150" width="16" height="150"/>
+    <rect x="138" y="176" width="236" height="16" rx="8"/>
+    <polygon points="256,300 210,352 302,352"/>
+    <rect x="200" y="352" width="112" height="14" rx="7"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round">
+    <line x1="150" y1="192" x2="150" y2="214"/>
+    <path d="M116 214 A40 40 0 0 0 184 214"/>
+    <line x1="362" y1="192" x2="362" y2="214"/>
+    <path d="M328 214 A40 40 0 0 0 396 214"/>
+  </g>
+</svg>

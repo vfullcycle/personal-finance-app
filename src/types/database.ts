@@ -60,48 +60,63 @@ export type Database = {
       accounts: {
         Row: {
           archived_at: string | null
+          asset_liquidity: string | null
+          cashflow_class: string | null
           created_at: string
           credit_limit: number | null
           id: string
           income_type: string | null
           is_active: boolean
+          is_invested: boolean
+          is_mortgage: boolean
           name: string
           opening_balance: number
           parent_id: string | null
           subtype: string | null
           taxable: boolean
+          term: string | null
           type_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
           archived_at?: string | null
+          asset_liquidity?: string | null
+          cashflow_class?: string | null
           created_at?: string
           credit_limit?: number | null
           id?: string
           income_type?: string | null
           is_active?: boolean
+          is_invested?: boolean
+          is_mortgage?: boolean
           name: string
           opening_balance?: number
           parent_id?: string | null
           subtype?: string | null
           taxable?: boolean
+          term?: string | null
           type_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
           archived_at?: string | null
+          asset_liquidity?: string | null
+          cashflow_class?: string | null
           created_at?: string
           credit_limit?: number | null
           id?: string
           income_type?: string | null
           is_active?: boolean
+          is_invested?: boolean
+          is_mortgage?: boolean
           name?: string
           opening_balance?: number
           parent_id?: string | null
           subtype?: string | null
           taxable?: boolean
+          term?: string | null
           type_id?: string
           updated_at?: string
           user_id?: string
@@ -129,6 +144,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          login_email: string
+          recovery_email: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          login_email: string
+          recovery_email: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          login_email?: string
+          recovery_email?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
       }
       transaction_legs: {
         Row: {
@@ -255,7 +294,8 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_login_email: { Args: { p_username: string }; Returns: string }
+      is_username_available: { Args: { p_username: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
