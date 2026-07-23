@@ -2,12 +2,15 @@
 // amount เป็นสตางค์ signed (+เดบิต/-เครดิต) ตาม REQUIREMENTS §3.3 — ต้องแปลความหมายตาม type_id ไม่ใช่ดูเครื่องหมายตรงๆ
 export type ReportLeg = {
   amount: number
+  transactionId: string
+  occurredOn: string
   account: {
     id: string
     name: string
     type_id: string
     subtype: string | null
     cashflow_class: string | null
+    is_mortgage: boolean
   }
 }
 

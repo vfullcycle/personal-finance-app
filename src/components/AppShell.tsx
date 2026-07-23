@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/categories', label: 'หมวดหมู่', icon: '🗂️' },
   { to: '/recurring', label: 'ประจำ', icon: '🔁' },
   { to: '/reports', label: 'รายงาน', icon: '📊' },
+  { to: '/analysis', label: 'วิเคราะห์', icon: '📈' },
   { to: '/settings', label: 'ตั้งค่า', icon: '⚙️' },
 ]
 

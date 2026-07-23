@@ -3,9 +3,18 @@ import { supabase } from '../../lib/supabase'
 import type { ReportLeg } from './reportCalculations'
 
 type RawRow = {
+  id: string
+  occurred_on: string
   transaction_legs: {
     amount: number
-    accounts: { id: string; name: string; type_id: string; subtype: string | null; cashflow_class: string | null }
+    accounts: {
+      id: string
+      name: string
+      type_id: string
+      subtype: string | null
+      cashflow_class: string | null
+      is_mortgage: boolean
+    }
   }[]
 }
 
@@ -29,7 +38,7 @@ export function useReportLegs(range: { from: string; to: string } | null) {
 
     supabase
       .from('transactions')
-      .select('transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class))')
+      .select('id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage))')
       .gte('occurred_on', range.from)
       .lte('occurred_on', range.to)
       .then(({ data, error: fetchError }) => {
@@ -42,7 +51,7 @@ export function useReportLegs(range: { from: string; to: string } | null) {
         const rows = (data ?? []) as unknown as RawRow[]
         setLegs(
           rows.flatMap((r) =>
-            r.transaction_legs.map((l) => ({ amount: l.amount, account: l.accounts })),
+            r.transaction_legs.map((l) => ({ amount: l.amount, transactionId: r.id, occurredOn: r.occurred_on, account: l.accounts })),
           ),
         )
         setLoading(false)

@@ -293,6 +293,54 @@ export type Database = {
         }
         Relationships: []
       }
+      savings_goals: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          name: string
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          name: string
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "savings_goals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "savings_goals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_account_balances"
+            referencedColumns: ["account_id"]
+          },
+        ]
+      }
       tags: {
         Row: {
           created_at: string
@@ -479,9 +527,13 @@ export type Database = {
         Args: { as_of: string }
         Returns: {
           account_id: string
+          asset_liquidity: string
           balance: number
+          is_invested: boolean
+          is_mortgage: boolean
           name: string
           subtype: string
+          term: string
           type_id: string
           user_id: string
         }[]

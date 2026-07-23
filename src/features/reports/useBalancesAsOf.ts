@@ -7,6 +7,10 @@ export type BalanceAsOfRow = {
   name: string
   type_id: string
   subtype: string | null
+  asset_liquidity: string | null
+  is_invested: boolean
+  term: string | null
+  is_mortgage: boolean
   balance: number
 }
 

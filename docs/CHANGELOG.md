@@ -2,6 +2,16 @@
 
 รูปแบบ: `## <ฟีเจอร์> vX.Y — <วันที่>` ตามโปรโตคอลใน `PROJECT_BIBLE.md` §7
 
+## Analysis v1.0 — 24 ก.ค. 2569
+
+- M8: หน้า `/analysis` — personal financial ratio 8 ตัว 3 กลุ่ม (สภาพคล่อง/หนี้สิน/การออม) เทียบเกณฑ์มาตรฐาน REQUIREMENTS §7 พร้อม badge ผ่าน/ไม่ผ่านเกณฑ์ + decision tools (ความสามารถซื้อของชิ้นใหญ่, debt headroom) + เป้าหมายการออม (ตั้ง+ติดตามความคืบหน้า) — ดูรายละเอียดสูตรคำนวณใน `SPEC-analysis.md`
+  - reuse ตัวแปรจาก `reportCalculations.ts` (C4) ไม่คำนวณซ้ำ (รายได้/ค่าใช้จ่าย/เงินออม/กระแสเงินสดสุทธิ)
+  - เงินผ่อนหนี้รวม (เงินต้น+ดอกเบี้ย) คำนวณจาก transaction co-occurrence ไม่จับชื่อบัญชี "ดอกเบี้ยเงินกู้" (ผู้ใช้เลือกหมวดดอกเบี้ยเองได้ตอนผ่อนหนี้ และแก้ชื่อบัญชีได้ ชื่อจึงอ้างอิงไม่ได้)
+  - เป้าหมายการออมผูกกับบัญชีสินทรัพย์จริง ไม่เก็บ "ออมแล้วเท่าไหร่" แยก กันข้อมูลสองชุดไม่ตรงกัน
+- Migration ใหม่ 1 ไฟล์ (additive แต่ drop+recreate `fn_account_balances_as_of` เพราะเปลี่ยน return signature): เพิ่ม `asset_liquidity`/`is_invested`/`term`/`is_mortgage` ในผลลัพธ์ฟังก์ชัน + ตารางใหม่ `savings_goals`
+- ทดสอบผ่าน: live browser testing (Playwright ชั่วคราว + test user สร้าง/ลบผ่าน Supabase) ด้วยข้อมูลจำลอง 12 เดือนครบทุก cashflow_class + เงินกู้ 2 ก้อน (มี/ไม่มีจำนอง) เทียบตัวเลขหน้าจอกับคำนวณมือตรงทุกตัว ครอบคลุมสถานะ pass/fail/na ครบ + decision tools + savings goal CRUD ทั้ง desktop/mobile
+- หมายเหตุ scope: ช่วงเวลาคำนวณ ratio fix ที่ 12 เดือนล่าสุด ยังไม่ทำตัวเลือกปรับช่วงเอง, take-home ยังไม่หักภาษีแม่นยำจนกว่า Thai PIT (C6) เสร็จ
+
 ## Reports v1.0 — 23 ก.ค. 2569
 
 - M5: หน้า `/reports` — งบรายได้-ค่าใช้จ่าย, งบกระแสเงินสด, งบดุล, กราฟ net worth ย้อนหลัง (Recharts) + เทียบช่วงเวลา (MoM/YoY/ปีก่อนหน้า) ทุกงบ — ดูรายละเอียดสูตรคำนวณใน `SPEC-reports.md`
