@@ -11,7 +11,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/accounts'
+  const from = (location.state as { from?: string } | null)?.from ?? '/transactions'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()

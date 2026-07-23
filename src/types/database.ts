@@ -69,6 +69,11 @@ export type Database = {
           is_active: boolean
           is_invested: boolean
           is_mortgage: boolean
+          loan_annual_rate: number | null
+          loan_interest_method: string | null
+          loan_original_principal: number | null
+          loan_start_date: string | null
+          loan_term_months: number | null
           name: string
           opening_balance: number
           parent_id: string | null
@@ -90,6 +95,11 @@ export type Database = {
           is_active?: boolean
           is_invested?: boolean
           is_mortgage?: boolean
+          loan_annual_rate?: number | null
+          loan_interest_method?: string | null
+          loan_original_principal?: number | null
+          loan_start_date?: string | null
+          loan_term_months?: number | null
           name: string
           opening_balance?: number
           parent_id?: string | null
@@ -111,6 +121,11 @@ export type Database = {
           is_active?: boolean
           is_invested?: boolean
           is_mortgage?: boolean
+          loan_annual_rate?: number | null
+          loan_interest_method?: string | null
+          loan_original_principal?: number | null
+          loan_start_date?: string | null
+          loan_term_months?: number | null
           name?: string
           opening_balance?: number
           parent_id?: string | null
@@ -169,12 +184,143 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_transaction_legs: {
+        Row: {
+          account_id: string
+          amount: number | null
+          created_at: string
+          id: string
+          note: string | null
+          recurring_transaction_id: string
+          sign: number
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount?: number | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          recurring_transaction_id: string
+          sign: number
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          recurring_transaction_id?: string
+          sign?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transaction_legs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transaction_legs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "recurring_transaction_legs_recurring_transaction_id_fkey"
+            columns: ["recurring_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recurring_transactions: {
+        Row: {
+          amount_mode: string
+          auto_post: boolean
+          created_at: string
+          end_date: string | null
+          flow_type: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_posted_date: string | null
+          next_due_date: string
+          note: string | null
+          payee: string | null
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_mode: string
+          auto_post?: boolean
+          created_at?: string
+          end_date?: string | null
+          flow_type: string
+          frequency: string
+          id?: string
+          is_active?: boolean
+          last_posted_date?: string | null
+          next_due_date: string
+          note?: string | null
+          payee?: string | null
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_mode?: string
+          auto_post?: boolean
+          created_at?: string
+          end_date?: string | null
+          flow_type?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_posted_date?: string | null
+          next_due_date?: string
+          note?: string | null
+          payee?: string | null
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transaction_legs: {
         Row: {
           account_id: string
           amount: number
           created_at: string
           id: string
+          note: string | null
           transaction_id: string
           user_id: string
         }
@@ -183,6 +329,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          note?: string | null
           transaction_id: string
           user_id: string
         }
@@ -191,6 +338,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          note?: string | null
           transaction_id?: string
           user_id?: string
         }
@@ -211,6 +359,39 @@ export type Database = {
           },
           {
             foreignKeyName: "transaction_legs_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transaction_tags: {
+        Row: {
+          tag_id: string
+          transaction_id: string
+          user_id: string
+        }
+        Insert: {
+          tag_id: string
+          transaction_id: string
+          user_id: string
+        }
+        Update: {
+          tag_id?: string
+          transaction_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_tags_transaction_id_fkey"
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"

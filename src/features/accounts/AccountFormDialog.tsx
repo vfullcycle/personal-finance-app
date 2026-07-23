@@ -17,6 +17,7 @@ import {
   type AssetLiquidity,
   type Term,
 } from './constants'
+import { INTEREST_METHOD_LABEL, type InterestMethod } from './loanAmortization'
 import type { AccountRow } from './useAccounts'
 
 const ASSET_SUBTYPES = Object.keys(ASSET_SUBTYPE_LABEL) as AssetSubtype[]
@@ -60,6 +61,15 @@ export function AccountFormDialog({
   const [isMortgage, setIsMortgage] = useState(
     initial?.is_mortgage ?? (!isAsset ? LIABILITY_SUBTYPE_DEFAULTS[subtype as LiabilitySubtype].is_mortgage : false),
   )
+  const [loanOriginalPrincipal, setLoanOriginalPrincipal] = useState(
+    initial?.loan_original_principal != null ? String(satangToBaht(initial.loan_original_principal)) : '',
+  )
+  const [loanAnnualRate, setLoanAnnualRate] = useState(initial?.loan_annual_rate != null ? String(initial.loan_annual_rate) : '')
+  const [loanTermMonths, setLoanTermMonths] = useState(initial?.loan_term_months != null ? String(initial.loan_term_months) : '')
+  const [loanStartDate, setLoanStartDate] = useState(initial?.loan_start_date ?? '')
+  const [loanInterestMethod, setLoanInterestMethod] = useState<InterestMethod>(
+    (initial?.loan_interest_method as InterestMethod) ?? 'reducing_balance',
+  )
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -86,6 +96,18 @@ export function AccountFormDialog({
       return
     }
 
+    const loanFieldsTouched =
+      subtype === 'loan' && [loanOriginalPrincipal, loanAnnualRate, loanTermMonths, loanStartDate].some((v) => v.trim())
+    const loanFieldsComplete =
+      subtype === 'loan' && loanOriginalPrincipal.trim() && loanAnnualRate.trim() && loanTermMonths.trim() && loanStartDate
+
+    if (loanFieldsTouched && !loanFieldsComplete) {
+      const proceed = confirm(
+        'กรอกข้อมูลตั้งค่าเงินกู้ไม่ครบ ระบบจะไม่คำนวณเงินต้น/ดอกเบี้ยอัตโนมัติให้จนกว่าจะกรอกครบทุกช่อง ต้องการบันทึกแบบนี้ต่อไปหรือไม่?',
+      )
+      if (!proceed) return
+    }
+
     setSubmitting(true)
     const payload = {
       user_id: user.id,
@@ -99,6 +121,11 @@ export function AccountFormDialog({
       cashflow_class: isAsset && cashflowSavings ? 'savings' : null,
       term: !isAsset ? (term as Term) : null,
       is_mortgage: !isAsset && subtype === 'loan' ? isMortgage : false,
+      loan_original_principal: subtype === 'loan' && loanOriginalPrincipal.trim() ? bahtToSatang(loanOriginalPrincipal) : null,
+      loan_annual_rate: subtype === 'loan' && loanAnnualRate.trim() ? Number(loanAnnualRate) : null,
+      loan_term_months: subtype === 'loan' && loanTermMonths.trim() ? Number(loanTermMonths) : null,
+      loan_start_date: subtype === 'loan' && loanStartDate ? loanStartDate : null,
+      loan_interest_method: loanFieldsComplete ? loanInterestMethod : null,
     }
 
     const { error: saveError } = isEdit
@@ -230,10 +257,70 @@ export function AccountFormDialog({
                 </select>
               </div>
               {subtype === 'loan' && (
-                <div className="checkbox-field">
-                  <input id="isMortgage" type="checkbox" checked={isMortgage} onChange={(e) => setIsMortgage(e.target.checked)} />
-                  <label htmlFor="isMortgage">เป็นเงินกู้จำนอง (บ้าน)</label>
-                </div>
+                <>
+                  <div className="checkbox-field">
+                    <input id="isMortgage" type="checkbox" checked={isMortgage} onChange={(e) => setIsMortgage(e.target.checked)} />
+                    <label htmlFor="isMortgage">เป็นเงินกู้จำนอง (บ้าน)</label>
+                  </div>
+
+                  <div className="field-hint" style={{ margin: '4px 0 12px' }}>
+                    ตั้งค่าเงินกู้ (ไม่บังคับ) — ถ้ากรอกครบ ระบบจะคำนวณเงินต้น/ดอกเบี้ยแต่ละงวดให้อัตโนมัติตอนบันทึกค่างวด ไม่ต้องเปิด statement มาแยกเอง
+                  </div>
+                  <div className="field">
+                    <label htmlFor="loanOriginalPrincipal">ยอดกู้ตั้งต้น (บาท)</label>
+                    <input
+                      id="loanOriginalPrincipal"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      value={loanOriginalPrincipal}
+                      onChange={(e) => setLoanOriginalPrincipal(e.target.value)}
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="loanAnnualRate">อัตราดอกเบี้ย (% ต่อปี)</label>
+                    <input
+                      id="loanAnnualRate"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.001"
+                      min="0"
+                      value={loanAnnualRate}
+                      onChange={(e) => setLoanAnnualRate(e.target.value)}
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="loanTermMonths">ระยะเวลา (เดือน)</label>
+                    <input
+                      id="loanTermMonths"
+                      type="number"
+                      inputMode="numeric"
+                      step="1"
+                      min="1"
+                      value={loanTermMonths}
+                      onChange={(e) => setLoanTermMonths(e.target.value)}
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="loanStartDate">วันเริ่มสัญญา</label>
+                    <input id="loanStartDate" type="date" value={loanStartDate} onChange={(e) => setLoanStartDate(e.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="loanInterestMethod">วิธีคำนวณดอกเบี้ย</label>
+                    <select
+                      id="loanInterestMethod"
+                      value={loanInterestMethod}
+                      onChange={(e) => setLoanInterestMethod(e.target.value as InterestMethod)}
+                    >
+                      {Object.entries(INTEREST_METHOD_LABEL).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
               )}
             </>
           )}

@@ -9,6 +9,8 @@ import { CheckEmailPage } from './features/auth/CheckEmailPage'
 import { SettingsPage } from './features/auth/SettingsPage'
 import { AccountsPage } from './features/accounts/AccountsPage'
 import { CategoriesPage } from './features/accounts/CategoriesPage'
+import { TransactionsPage } from './features/transactions/TransactionsPage'
+import { RecurringPage } from './features/transactions/RecurringPage'
 
 function App() {
   return (
@@ -26,13 +28,15 @@ function App() {
           </ProtectedRoute>
         }
       >
+        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/recurring" element={<RecurringPage />} />
         <Route path="/accounts" element={<AccountsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/accounts" replace />} />
-      <Route path="*" element={<Navigate to="/accounts" replace />} />
+      <Route path="/" element={<Navigate to="/transactions" replace />} />
+      <Route path="*" element={<Navigate to="/transactions" replace />} />
     </Routes>
   )
 }

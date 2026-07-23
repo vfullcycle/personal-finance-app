@@ -44,6 +44,9 @@ export function AccountsPage() {
     <div className="page">
       <div className="list-header">
         <h1>บัญชี</h1>
+        <button type="button" className="btn" onClick={() => setEditing('new')}>
+          + เพิ่มบัญชี
+        </button>
       </div>
 
       <div className="tabs">
@@ -100,10 +103,6 @@ export function AccountsPage() {
           </div>
         )
       })}
-
-      <button type="button" className="fab" onClick={() => setEditing('new')} aria-label="เพิ่มบัญชี">
-        +
-      </button>
 
       {editing && (
         <AccountFormDialog

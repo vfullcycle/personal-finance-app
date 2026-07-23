@@ -2,6 +2,22 @@
 
 รูปแบบ: `## <ฟีเจอร์> vX.Y — <วันที่>` ตามโปรโตคอลใน `PROJECT_BIBLE.md` §7
 
+## Transactions + Split + Recurring v1.0 — 23 ก.ค. 2569
+
+- M3 Transactions: ปุ่มเงินเข้า/เงินออก/โอน ซ่อน debit/credit ทั้งหมด (map อัตโนมัติตาม REQUIREMENTS §3.4) — ดูรายละเอียดใน `SPEC-transactions-recurring.md`
+  - Split หลายหมวด/บิลในรายการเดียว (เงินเข้า/เงินออก), tag/มิติ (ผูกระดับหัวรายการ), payee/note ใน "ตัวเลือกเพิ่มเติม"
+  - ผ่อนจ่ายหนี้: เลือกปลายทางเป็นบัญชีเงินกู้ → ฟอร์มสลับแยกเงินต้น/ดอกเบี้ยอัตโนมัติ (ห้ามเหมาเป็น expense ก้อนเดียวตาม §3.5)
+  - หน้า `/transactions` (default landing แทน `/accounts`) + FAB "เพิ่มรายการ" ลอยทุกหน้าใน AppShell
+- M4 Recurring: หน้า `/recurring`, ความถี่ 4 แบบ (ไม่มี "ครั้งเดียว"), ยอดคงที่/ผันแปร, auto-post ตรวจตอนเปิดแอป (client-side) หรือเตือนยืนยันเอง
+- ส่วนต่อขยาย (ตกลงเพิ่มระหว่างแชต): ตั้งค่าเงินกู้ต่อบัญชี (ยอดกู้/ดอกเบี้ย/ระยะเวลา/วันเริ่มสัญญา/วิธีคำนวณ Flat หรือ Reducing balance) → คำนวณแยกเงินต้น/ดอกเบี้ยอัตโนมัติทุกงวดทั้งตอนบันทึกมือและรายการประจำ (`src/features/accounts/loanAmortization.ts`)
+- Migration ใหม่ 3 ไฟล์ (additive): `transaction_legs.note` + `tags`/`transaction_tags`, `recurring_transactions`/`recurring_transaction_legs`, `accounts.loan_*` fields
+- **บั๊กที่เจอระหว่าง build/UAT และแก้แล้ว:**
+  - `detectFlow` จัดประเภทรายการผ่อนจ่ายหนี้ผิดเป็น "เงินออก" ธรรมดา (เพราะมี leg ดอกเบี้ยเป็น expense ปน) ทำให้หน้ารายการโชว์ยอดไม่ครบและแก้ไขรายการพัง — แก้ให้เช็คทิศทางของ leg หนี้สินเป็นตัวตัดสินก่อน
+  - `end_date` ของรายการประจำถูกเก็บไว้แต่ไม่เคยถูกบังคับใช้จริงในโค้ดที่ post — auto-post จะโพสต์ต่อเรื่อยๆ เกินกำหนดสัญญาด้วยยอด fallback ที่ไม่ตรง แก้ให้ปิดใช้งานอัตโนมัติเมื่อเลย end_date
+  - Timezone: `addPeriod`/`today()`/ช่วงเดือนของหน้ารายการ ใช้ `toISOString()` ซึ่งแปลงเป็น UTC เสมอ — ทำให้วันที่เลื่อนถอยหลัง 1 วันทุกครั้งที่คำนวณสำหรับ timezone ไทย (+7) แก้เป็นคำนวณด้วยปฏิทินท้องถิ่นล้วนๆ (`src/lib/date.ts`)
+- ทดสอบผ่าน: live browser testing (Playwright ชั่วคราว + test user สร้าง/ลบผ่าน Supabase admin API ไม่ทิ้งรอยในโปรเจกต์จริง) ครบทุก flow — เงินเข้า/ออก/split, โอนทั่วไป/เข้าลงทุน/ผ่อนหนี้ (สร้าง+แก้ไข), tag, รายการประจำ auto-post หลายงวดติดกัน (ยืนยันคำนวณ reducing balance ถูกต้องเทียบมือ), ยืนยันยอดผันแปร, end_date บังคับหยุด auto-post จริง — ทุก transaction balance = 0 ตรวจสอบผ่าน DB โดยตรง
+- หมายเหตุ scope: recurring ไม่รองรับ split หลายหมวดใน v1, รองรับวิธีคำนวณดอกเบี้ยแค่ Flat/Reducing balance (Rule of 78 เป็น backlog), ยังไม่มี automated test suite (ทดสอบด้วย script ที่เขียนแล้วทิ้งตลอดแชต)
+
 ## Auth + COA + Accounts v1.0 — 23 ก.ค. 2569
 
 - Supabase Auth ด้วย **username** (ไม่ใช่อีเมล) ผ่านกลไก email plus-addressing — ดูรายละเอียดใน `SPEC-auth-coa-accounts.md`

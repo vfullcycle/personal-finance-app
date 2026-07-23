@@ -535,3 +535,20 @@ input, select {
 .form-actions .btn {
   flex: 1;
 }
+
+/* transactions */
+.flow-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.split-line {
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+}
+
+.split-line:last-of-type {
+  border-bottom: none;
+}
