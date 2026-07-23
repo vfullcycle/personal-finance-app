@@ -1,6 +1,6 @@
 # REQUIREMENTS — ระบบบริหารการเงินส่วนบุคคล
 
-> **สถานะ: FROZEN v1.3** · freeze v1.0: 21 ก.ค. 2569 · แก้ล่าสุด v1.3: 21 ก.ค. 2569
+> **สถานะ: FROZEN v1.4** · freeze v1.0: 21 ก.ค. 2569 · แก้ล่าสุด v1.4: 23 ก.ค. 2569
 > เอกสารนี้คือ source of truth หลักของโปรเจกต์ ทุกแชตอ่านไฟล์นี้ก่อนเริ่มงาน
 > การแก้ requirement ทำได้เฉพาะผ่านการตกลงในแชตเก็บ requirement เท่านั้น
 > คู่กับ `docs/PROJECT_BIBLE.md` (ธรรมนูญ workflow + tech + โปรโตคอลแยกแชต)
@@ -9,6 +9,7 @@
 > - v1.1 — เพิ่ม §8.1 mobile-first + PWA เป็น requirement หลัก, เพิ่ม PWA ใน tech stack
 > - v1.2 — เพิ่ม §3.5 การจัดหมวดรายจ่าย 3 ถัง (cashflow_class) + seed taxonomy + กฎแปลง savings/loan/tax
 > - v1.3 — §7 ปรับเป็นชุด ratio ทางการ 8 ตัว (Muang Thai Academy) + เพิ่ม field asset_liquidity/is_invested/term/is_mortgage ใน §3.2
+> - v1.4 — เพิ่ม subtype `receivable` (ลูกหนี้) ใน §3.2 (ตกลงเพิ่มระหว่างแชต C4)
 
 ---
 
@@ -46,7 +47,7 @@ asset (สินทรัพย์) · liability (หนี้สิน) · equi
   - expense/asset account เพิ่ม `cashflow_class` (nullable enum: fixed/variable/savings) — ดู §3.5
   - asset account เพิ่ม `asset_liquidity` (liquid/marketable/illiquid) + `is_invested` (bool) — ป้อน ratio §7
   - liability account เพิ่ม `term` (current/long_term) + `is_mortgage` (bool) — ป้อน ratio §7
-  - บัญชีประเภทสินทรัพย์/หนี้: รองรับ เงินสด/ธนาคาร/บัตรเครดิต/เงินกู้/การลงทุน/สินทรัพย์อื่น + วงเงินบัตร
+  - บัญชีประเภทสินทรัพย์/หนี้: รองรับ เงินสด/ธนาคาร/บัตรเครดิต/เงินกู้/การลงทุน/ลูกหนี้/สินทรัพย์อื่น + วงเงินบัตร
 - `transactions` — หัวรายการ (วันที่, payee, note)
 - `transaction_legs` — ขาเดบิต/เครดิต (amount เป็นสตางค์, อ้าง account_id)
 

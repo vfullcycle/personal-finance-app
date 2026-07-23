@@ -1,5 +1,5 @@
 export type AccountType = 'asset' | 'liability' | 'equity' | 'income' | 'expense'
-export type AssetSubtype = 'cash' | 'bank' | 'investment' | 'other_asset'
+export type AssetSubtype = 'cash' | 'bank' | 'investment' | 'receivable' | 'other_asset'
 export type LiabilitySubtype = 'credit_card' | 'loan'
 export type CashflowClass = 'fixed' | 'variable' | 'savings'
 export type AssetLiquidity = 'liquid' | 'marketable' | 'illiquid'
@@ -18,6 +18,7 @@ export const ASSET_SUBTYPE_LABEL: Record<AssetSubtype, string> = {
   cash: 'เงินสด',
   bank: 'ธนาคาร',
   investment: 'เงินลงทุน',
+  receivable: 'ลูกหนี้ (เงินให้ยืม/รอเบิกคืน)',
   other_asset: 'สินทรัพย์อื่นๆ',
 }
 
@@ -58,6 +59,7 @@ export const ASSET_SUBTYPE_DEFAULTS: Record<AssetSubtype, { asset_liquidity: Ass
   cash: { asset_liquidity: 'liquid', is_invested: false },
   bank: { asset_liquidity: 'liquid', is_invested: false },
   investment: { asset_liquidity: 'marketable', is_invested: true },
+  receivable: { asset_liquidity: 'illiquid', is_invested: false },
   other_asset: { asset_liquidity: 'illiquid', is_invested: false },
 }
 

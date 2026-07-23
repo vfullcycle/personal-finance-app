@@ -2,6 +2,19 @@
 
 รูปแบบ: `## <ฟีเจอร์> vX.Y — <วันที่>` ตามโปรโตคอลใน `PROJECT_BIBLE.md` §7
 
+## Reports v1.0 — 23 ก.ค. 2569
+
+- M5: หน้า `/reports` — งบรายได้-ค่าใช้จ่าย, งบกระแสเงินสด, งบดุล, กราฟ net worth ย้อนหลัง (Recharts) + เทียบช่วงเวลา (MoM/YoY/ปีก่อนหน้า) ทุกงบ — ดูรายละเอียดสูตรคำนวณใน `SPEC-reports.md`
+  - งบกระแสเงินสดแยก 6 บรรทัด (รายรับ/คงที่/แปรผัน/ไม่ระบุถัง/เงินออม-ลงทุน/เงินต้นผ่อนหนี้) พร้อม callout เทียบผลต่างจากรายได้สุทธิให้เห็นชัด
+  - การ์ดสรุปด่วนบนสุดของหน้า (net worth ปัจจุบัน/กระแสเงินสดสุทธิเดือนนี้/กำไรสุทธิเดือนนี้)
+- Migration ใหม่ 2 ไฟล์ (additive): `fn_account_balances_as_of`/`fn_net_worth_history` (balance ณ วันที่ในอดีต — `v_account_balances`/`v_balance_sheet` เดิมคำนวณปัจจุบันเท่านั้น)
+- **ส่วนขยาย (ตกลงเพิ่มระหว่างแชต):** เพิ่ม subtype `receivable` (ลูกหนี้) แยกจาก `other_asset` ใน `accounts` (migration additive + label ใน C2 `constants.ts`) — REQUIREMENTS bump เป็น v1.4 §3.2
+- **ประเด็นที่คุยกับวีระหว่าง UAT (บันทึกไว้กันงงซ้ำ):**
+  - Equity ติด 0 เสมอโดยดีไซน์ (ไม่มี flow ไหน post เข้าบัญชี equity ได้) — `Net worth = สินทรัพย์ − หนี้สิน` จับ "ส่วนของเจ้าของ" อัตโนมัติ ตราบใดที่บันทึกสินทรัพย์คู่กับหนี้สินที่เกี่ยวข้องครบ (เช่น กู้บ้านต้องมีบัญชี "บ้าน" เป็นสินทรัพย์คู่ด้วย ไม่งั้น net worth ติดลบเกินจริง — เจอเคสนี้จริงกับบัญชี test ตอน UAT แก้โดยเพิ่มบัญชีบ้านให้)
+  - credit card ไม่ถูกนับเป็น "เงินต้นผ่อนหนี้" ในกระแสเงินสด (เช็คเฉพาะ `subtype=loan`) เพราะรายจ่ายถูกนับเป็น expense ไปแล้วตอนรูดบัตร จ่ายบิลเป็นแค่ transfer
+- ทดสอบผ่าน: live browser testing (Playwright ชั่วคราว + test user สร้าง/ลบผ่าน Supabase admin API สำหรับรอบตรวจสอบอัตโนมัติ) ครบทุกแท็บ ทั้ง mobile/desktop, ตัวเลขไขว้กันถูกทุกจุด (งบดุล assets−liabilities=net worth ตรงทุกกรณี รวมกรณีบัญชี archive/เดือนขาดทุน/ลูกหนี้บางส่วน-เต็มจำนวน) + สร้างบัญชี `test` (username `test`) พร้อมข้อมูลจำลอง 14 เดือนถาวรให้วี UAT ด้วยมือ
+- หมายเหตุ scope: personal financial ratios + decision tools (M8) ยังไม่ทำ (C5), ยังไม่มีหน้าจอเช็ค reconciliation ระหว่าง 3 งบโดยตรง (แค่ callout ในกระแสเงินสด), export/print งบเป็น M6 (เฟส 3)
+
 ## Transactions + Split + Recurring v1.0 — 23 ก.ค. 2569
 
 - M3 Transactions: ปุ่มเงินเข้า/เงินออก/โอน ซ่อน debit/credit ทั้งหมด (map อัตโนมัติตาม REQUIREMENTS §3.4) — ดูรายละเอียดใน `SPEC-transactions-recurring.md`

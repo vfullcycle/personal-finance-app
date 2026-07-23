@@ -475,6 +475,26 @@ export type Database = {
       }
     }
     Functions: {
+      fn_account_balances_as_of: {
+        Args: { as_of: string }
+        Returns: {
+          account_id: string
+          balance: number
+          name: string
+          subtype: string
+          type_id: string
+          user_id: string
+        }[]
+      }
+      fn_net_worth_history: {
+        Args: { month_count?: number }
+        Returns: {
+          as_of: string
+          net_worth: number
+          total_assets: number
+          total_liabilities: number
+        }[]
+      }
       get_login_email: { Args: { p_username: string }; Returns: string }
       is_username_available: { Args: { p_username: string }; Returns: boolean }
     }
