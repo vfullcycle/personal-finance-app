@@ -62,10 +62,12 @@ export type CashFlowStatement = {
   variableExpense: number
   uncategorizedExpense: number
   savingsOutflow: number
+  savingsWithdrawal: number
   principalRepayment: number
+  newLoanProceeds: number
   netIncome: number
   netCashFlow: number
-  /** ส่วนต่างงบรายได้ๆ vs กระแสเงินสด = เงินออม + เงินต้นผ่อนหนี้ (net worth คงที่แต่เงินสดไหลออกจริง) */
+  /** ส่วนต่างงบรายได้ๆ vs กระแสเงินสด = เงินออม + เงินต้นผ่อนหนี้ หัก เงินถอนออม + เงินกู้ใหม่ (net worth คงที่แต่เงินสดไหลออก/เข้าจริง) */
   diffFromNetIncome: number
 }
 
@@ -75,7 +77,9 @@ export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
   let variableExpense = 0
   let uncategorizedExpense = 0
   let savingsOutflow = 0
+  let savingsWithdrawal = 0
   let principalRepayment = 0
+  let newLoanProceeds = 0
 
   for (const leg of legs) {
     const { type_id, subtype, cashflow_class } = leg.account
@@ -85,16 +89,18 @@ export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
       if (cashflow_class === 'fixed') fixedExpense += leg.amount
       else if (cashflow_class === 'variable') variableExpense += leg.amount
       else uncategorizedExpense += leg.amount
-    } else if (type_id === 'asset' && cashflow_class === 'savings' && leg.amount > 0) {
-      savingsOutflow += leg.amount // โอนเข้าถังออม/ลงทุน — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง (§3.5)
-    } else if (type_id === 'liability' && subtype === 'loan' && leg.amount > 0) {
-      principalRepayment += leg.amount // เงินต้นลดหนี้ — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง
+    } else if (type_id === 'asset' && cashflow_class === 'savings') {
+      if (leg.amount > 0) savingsOutflow += leg.amount // โอนเข้าถังออม/ลงทุน — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง (§3.5)
+      else savingsWithdrawal += -leg.amount // โอนออกจากถังออม/ลงทุนกลับมาใช้ — เงินสดไหลเข้าจริง
+    } else if (type_id === 'liability' && subtype === 'loan') {
+      if (leg.amount > 0) principalRepayment += leg.amount // เงินต้นลดหนี้ — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง
+      else newLoanProceeds += -leg.amount // รับเงินกู้ใหม่เข้ามา — เงินสดไหลเข้าจริง แม้ไม่ใช่รายได้
     }
   }
 
   const totalExpense = fixedExpense + variableExpense + uncategorizedExpense
   const netIncome = totalIncome - totalExpense
-  const netCashFlow = netIncome - savingsOutflow - principalRepayment
+  const netCashFlow = netIncome - savingsOutflow - principalRepayment + savingsWithdrawal + newLoanProceeds
 
   return {
     totalIncome,
@@ -102,7 +108,9 @@ export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
     variableExpense,
     uncategorizedExpense,
     savingsOutflow,
+    savingsWithdrawal,
     principalRepayment,
+    newLoanProceeds,
     netIncome,
     netCashFlow,
     diffFromNetIncome: netIncome - netCashFlow,

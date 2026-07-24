@@ -37,7 +37,9 @@ const EMPTY_CF: CashFlowStatement = {
   variableExpense: 0,
   uncategorizedExpense: 0,
   savingsOutflow: 0,
+  savingsWithdrawal: 0,
   principalRepayment: 0,
+  newLoanProceeds: 0,
   netIncome: 0,
   netCashFlow: 0,
   diffFromNetIncome: 0,
@@ -54,7 +56,16 @@ export function CashFlowReport({ range, compareRange }: { range: DateRange; comp
   if (loading || (showCompare && compareLoading)) return <div className="empty-state">กำลังโหลด...</div>
   if (error) return <div className="banner-error">{error}</div>
 
-  if (cf.totalIncome === 0 && cf.fixedExpense === 0 && cf.variableExpense === 0 && cf.savingsOutflow === 0 && cf.principalRepayment === 0) {
+  if (
+    cf.totalIncome === 0 &&
+    cf.fixedExpense === 0 &&
+    cf.variableExpense === 0 &&
+    cf.uncategorizedExpense === 0 &&
+    cf.savingsOutflow === 0 &&
+    cf.savingsWithdrawal === 0 &&
+    cf.principalRepayment === 0 &&
+    cf.newLoanProceeds === 0
+  ) {
     return <div className="empty-state">ยังไม่มีรายการในช่วงนี้</div>
   }
 
@@ -93,9 +104,25 @@ export function CashFlowReport({ range, compareRange }: { range: DateRange; comp
           hideIfZero
         />
         <Line
+          label="(บวก) ถอนเงินออม/ลงทุน"
+          amount={cf.savingsWithdrawal}
+          compareAmount={compareCf.savingsWithdrawal}
+          goodDirection="down"
+          showCompare={showCompare}
+          hideIfZero
+        />
+        <Line
           label="(หัก) เงินต้นผ่อนหนี้"
           amount={cf.principalRepayment}
           compareAmount={compareCf.principalRepayment}
+          goodDirection="down"
+          showCompare={showCompare}
+          hideIfZero
+        />
+        <Line
+          label="(บวก) เงินกู้ใหม่ที่รับเข้ามา"
+          amount={cf.newLoanProceeds}
+          compareAmount={compareCf.newLoanProceeds}
           goodDirection="down"
           showCompare={showCompare}
           hideIfZero
@@ -110,10 +137,10 @@ export function CashFlowReport({ range, compareRange }: { range: DateRange; comp
         </span>
       </div>
 
-      {(cf.savingsOutflow > 0 || cf.principalRepayment > 0) && (
+      {cf.diffFromNetIncome !== 0 && (
         <div className="banner-info" style={{ marginTop: 12 }}>
           ต่างจากรายได้สุทธิในงบรายได้-ค่าใช้จ่าย ({formatSatangAsBaht(cf.netIncome)} บาท) อยู่ {formatSatangAsBaht(cf.diffFromNetIncome)} บาท
-          — ส่วนต่างคือเงินออม/ลงทุน + เงินต้นผ่อนหนี้ ที่ไม่ใช่ expense แต่เป็นเงินสดที่ไหลออกจริง
+          — ส่วนต่างคือ (เงินออม/ลงทุน + เงินต้นผ่อนหนี้) หัก (เงินถอนออม/ลงทุน + เงินกู้ใหม่ที่รับเข้ามา) ที่ไม่ใช่ expense แต่เป็นเงินสดที่ไหลออก/เข้าจริง
         </div>
       )}
     </div>
