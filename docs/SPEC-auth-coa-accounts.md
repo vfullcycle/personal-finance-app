@@ -51,7 +51,9 @@ Supabase Auth ผูกกับอีเมลโดยธรรมชาติ
 
 ## Routes
 `/signup` `/login` `/forgot-password` `/reset-password` `/check-email` (public) ·
-`/accounts` `/categories` `/settings` (protected, ใน `AppShell`: bottom nav มือถือ / sidebar desktop ตาม REQUIREMENTS §8.1)
+`/accounts` `/settings` (protected, ใน `AppShell`: bottom nav มือถือ / sidebar desktop ตาม REQUIREMENTS §8.1)
+
+**อัปเดตหลัง freeze (24 ก.ค. 2569, ดู `SPEC-tags.md`):** `/categories` ย้ายเข้าไปเป็น tab ใน `/settings` แทน (route เดิม redirect อัตโนมัติ) — `/settings` จึงไม่ใช่หน้าเดียวอีกต่อไป แต่เป็น tab: โปรไฟล์ / หมวดหมู่ / แท็ก-มิติ
 
 ## Non-goals ของ C2
 - Transactions/recurring (C3)
