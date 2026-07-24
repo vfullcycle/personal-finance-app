@@ -7,17 +7,19 @@ import { IncomeStatementReport } from './IncomeStatementReport'
 import { CashFlowReport } from './CashFlowReport'
 import { BalanceSheetReport } from './BalanceSheetReport'
 import { NetWorthChart } from './NetWorthChart'
+import { TagBreakdownReport } from './TagBreakdownReport'
 import { useBalancesAsOf } from './useBalancesAsOf'
 import { useReportLegs } from './useReportLegs'
 import { buildBalanceSheet, buildCashFlowStatement } from './reportCalculations'
 
-type ReportTab = 'income' | 'cashflow' | 'balance' | 'networth'
+type ReportTab = 'income' | 'cashflow' | 'balance' | 'networth' | 'tag'
 
 const TABS: { id: ReportTab; label: string }[] = [
   { id: 'income', label: 'รายได้-ค่าใช้จ่าย' },
   { id: 'cashflow', label: 'กระแสเงินสด' },
   { id: 'balance', label: 'งบดุล' },
   { id: 'networth', label: 'แนวโน้ม' },
+  { id: 'tag', label: 'ตามแท็ก' },
 ]
 
 function SummaryCard() {
@@ -77,7 +79,7 @@ export function ReportsPage() {
         ))}
       </div>
 
-      {activeTab !== 'networth' && (
+      {activeTab !== 'networth' && activeTab !== 'tag' && (
         <PeriodPicker
           periodType={periodType}
           anchor={anchor}
@@ -92,6 +94,7 @@ export function ReportsPage() {
       {activeTab === 'cashflow' && <CashFlowReport range={range} compareRange={compareRange} />}
       {activeTab === 'balance' && <BalanceSheetReport range={range} compareRange={compareRange} />}
       {activeTab === 'networth' && <NetWorthChart />}
+      {activeTab === 'tag' && <TagBreakdownReport />}
     </div>
   )
 }

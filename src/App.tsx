@@ -8,7 +8,6 @@ import { ResetPasswordPage } from './features/auth/ResetPasswordPage'
 import { CheckEmailPage } from './features/auth/CheckEmailPage'
 import { SettingsPage } from './features/auth/SettingsPage'
 import { AccountsPage } from './features/accounts/AccountsPage'
-import { CategoriesPage } from './features/accounts/CategoriesPage'
 import { TransactionsPage } from './features/transactions/TransactionsPage'
 import { RecurringPage } from './features/transactions/RecurringPage'
 import { ReportsPage } from './features/reports/ReportsPage'
@@ -35,7 +34,7 @@ function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/analysis" element={<AnalysisPage />} />
         <Route path="/accounts" element={<AccountsPage />} />
-        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/categories" element={<Navigate to="/settings?tab=categories" replace />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

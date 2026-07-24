@@ -20,7 +20,8 @@ type RawRow = {
 
 // ดึง legs ทุกตัวในช่วงวันที่ (join ผ่าน transactions.occurred_on แบบเดียวกับ useTransactions)
 // range = null หมายถึงไม่ต้องดึง (เช่น ปิดโหมดเทียบช่วง)
-export function useReportLegs(range: { from: string; to: string } | null) {
+// tagId (optional) = กรองเฉพาะธุรกรรมที่ผูกแท็กนี้ (inner join ผ่าน transaction_tags) — ใช้กับ "สรุปตามแท็ก"
+export function useReportLegs(range: { from: string; to: string } | null, tagId?: string | null) {
   const [legs, setLegs] = useState<ReportLeg[]>([])
   const [loading, setLoading] = useState(!!range)
   const [error, setError] = useState<string | null>(null)
@@ -36,32 +37,34 @@ export function useReportLegs(range: { from: string; to: string } | null) {
     setLoading(true)
     setError(null)
 
-    supabase
-      .from('transactions')
-      .select('id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage))')
-      .gte('occurred_on', range.from)
-      .lte('occurred_on', range.to)
-      .then(({ data, error: fetchError }) => {
-        if (cancelled) return
-        if (fetchError) {
-          setError(fetchError.message)
-          setLoading(false)
-          return
-        }
-        const rows = (data ?? []) as unknown as RawRow[]
-        setLegs(
-          rows.flatMap((r) =>
-            r.transaction_legs.map((l) => ({ amount: l.amount, transactionId: r.id, occurredOn: r.occurred_on, account: l.accounts })),
-          ),
-        )
+    const columns = tagId
+      ? 'id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage)), transaction_tags!inner(tag_id)'
+      : 'id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage))'
+
+    let query = supabase.from('transactions').select(columns).gte('occurred_on', range.from).lte('occurred_on', range.to)
+    if (tagId) query = query.eq('transaction_tags.tag_id', tagId)
+
+    query.then(({ data, error: fetchError }) => {
+      if (cancelled) return
+      if (fetchError) {
+        setError(fetchError.message)
         setLoading(false)
-      })
+        return
+      }
+      const rows = (data ?? []) as unknown as RawRow[]
+      setLegs(
+        rows.flatMap((r) =>
+          r.transaction_legs.map((l) => ({ amount: l.amount, transactionId: r.id, occurredOn: r.occurred_on, account: l.accounts })),
+        ),
+      )
+      setLoading(false)
+    })
 
     return () => {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [range?.from, range?.to])
+  }, [range?.from, range?.to, tagId])
 
   return { legs, loading, error }
 }

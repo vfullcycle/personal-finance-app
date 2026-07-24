@@ -61,5 +61,5 @@
 ## Non-goals ของ C3
 - Reports/งบการเงิน (Balance Sheet, Cash Flow) — ข้อมูลถูกต้องแล้วที่ชั้น view แต่ยังไม่มีหน้าจอ → C4
 - Rule of 78 / เงินต้นคงที่ สำหรับคำนวณดอกเบี้ยเงินกู้ — backlog
-- จัดการ tags (rename/ลบ) — สร้างได้อย่างเดียวตอนนี้
+- ~~จัดการ tags (rename/ลบ) — สร้างได้อย่างเดียวตอนนี้~~ ปิดแล้ว ดู `SPEC-tags.md`
 - Automated test suite — ทดสอบด้วย live browser script (Playwright) แบบเขียนแล้วทิ้งตลอดทั้งแชต ยังไม่มี regression test ติดโปรเจกต์

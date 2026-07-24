@@ -9,7 +9,7 @@ const TABS: { id: AccountType; label: string }[] = [
   { id: 'equity', label: 'ทุน' },
 ]
 
-export function CategoriesPage() {
+export function CategoriesTab() {
   const [activeTab, setActiveTab] = useState<AccountType>('income')
   const [showArchived, setShowArchived] = useState(false)
   const [editing, setEditing] = useState<AccountRow | 'new' | null>(null)
@@ -35,9 +35,8 @@ export function CategoriesPage() {
   }
 
   return (
-    <div className="page">
-      <div className="list-header">
-        <h1>หมวดหมู่</h1>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
         <button type="button" className="btn" onClick={() => setEditing('new')}>
           + เพิ่มหมวดหมู่
         </button>

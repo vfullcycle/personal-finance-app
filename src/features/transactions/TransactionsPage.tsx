@@ -3,6 +3,7 @@ import { formatSatangAsBaht } from '../../lib/money'
 import { toLocalDateString } from '../../lib/date'
 import { TransactionFormDialog } from './TransactionFormDialog'
 import { detectFlow, useTransactions, type TransactionDetail } from './useTransactions'
+import { useTags } from './useTags'
 
 function monthRange(anchor: Date) {
   return {
@@ -33,9 +34,25 @@ export function TransactionsPage() {
   const [anchor, setAnchor] = useState(() => new Date())
   const range = useMemo(() => monthRange(anchor), [anchor])
   const { transactions, loading, error, refresh } = useTransactions(range)
+  const { tags } = useTags()
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [editing, setEditing] = useState<TransactionDetail | null>(null)
 
   const monthLabel = anchor.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })
+
+  const visible = tagFilter ? transactions.filter((t) => t.tagIds.includes(tagFilter)) : transactions
+
+  const filterSummary = useMemo(() => {
+    if (!tagFilter) return null
+    let totalIncome = 0
+    let totalExpense = 0
+    for (const t of visible) {
+      const { flow, amount } = summarize(t)
+      if (flow === 'income') totalIncome += amount
+      else if (flow === 'expense') totalExpense += amount
+    }
+    return { count: visible.length, totalIncome, totalExpense }
+  }, [tagFilter, visible])
 
   return (
     <div className="page">
@@ -63,12 +80,45 @@ export function TransactionsPage() {
         </button>
       </div>
 
+      {tags.length > 0 && (
+        <div className="radio-group" style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            className={`radio-chip${tagFilter === null ? ' active' : ''}`}
+            onClick={() => setTagFilter(null)}
+          >
+            ทั้งหมด
+          </button>
+          {tags.map((tag) => (
+            <button
+              key={tag.id}
+              type="button"
+              className={`radio-chip${tagFilter === tag.id ? ' active' : ''}`}
+              onClick={() => setTagFilter(tag.id)}
+            >
+              {tag.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {filterSummary && (
+        <div className="banner-info" style={{ marginBottom: 12 }}>
+          {filterSummary.count} รายการ · รายรับ {formatSatangAsBaht(filterSummary.totalIncome)} บาท · รายจ่าย{' '}
+          {formatSatangAsBaht(filterSummary.totalExpense)} บาท
+        </div>
+      )}
+
       {error && <div className="banner-error">{error}</div>}
 
-      {!loading && transactions.length === 0 && <div className="empty-state">ยังไม่มีรายการในเดือนนี้ กดปุ่ม + เพื่อเพิ่ม</div>}
+      {!loading && visible.length === 0 && (
+        <div className="empty-state">
+          {tagFilter ? 'ไม่มีรายการที่ติดแท็กนี้ในเดือนนี้' : 'ยังไม่มีรายการในเดือนนี้ กดปุ่ม + เพื่อเพิ่ม'}
+        </div>
+      )}
 
       <div className="card">
-        {transactions.map((t) => {
+        {visible.map((t) => {
           const { flow, amount, label } = summarize(t)
           return (
             <button key={t.id} type="button" className="item-row" onClick={() => setEditing(t)}>
