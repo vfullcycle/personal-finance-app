@@ -36,6 +36,7 @@ export type AnalysisFigures = {
   totalIncome: number
   monthlyTakeHome: number
   monthlyExpense: number
+  netIncome: number
   netCashFlow: number
   monthlyDiscretionaryCashFlow: number
   savingsOutflow: number
@@ -118,6 +119,7 @@ export function calculateAnalysisFigures(legs: ReportLeg[], balanceRows: Balance
     // take-home (รายได้สุทธิ) เฟส 1 = รายได้รวมตามที่บันทึกจริง ยังไม่หักภาษี (Thai PIT อยู่ C6)
     monthlyTakeHome: incomeStatement.totalIncome / months,
     monthlyExpense: totalExpense / months,
+    netIncome: incomeStatement.netIncome,
     netCashFlow: cashFlow.netCashFlow,
     monthlyDiscretionaryCashFlow: cashFlow.netCashFlow / months,
     savingsOutflow: cashFlow.savingsOutflow,
@@ -158,7 +160,13 @@ export function buildRatioGroups(f: AnalysisFigures): RatioGroup[] {
   const debtToAsset = f.totalAssets > 0 ? f.totalLiabilities / f.totalAssets : null
   const dsr = f.totalIncome > 0 ? f.totalDebtService / f.totalIncome : null
   const nonMortgageDsr = f.totalIncome > 0 ? f.nonMortgageDebtService / f.totalIncome : null
-  const savingRatio = f.totalIncome > 0 ? (f.savingsOutflow + f.netCashFlow) / f.totalIncome : null
+  // REQUIREMENTS §7: saving ratio = (รายจ่ายเพื่อการออม + กระแสเงินสดสุทธิ) ÷ รายได้ โดย
+  // กระแสเงินสดสุทธิ(ของสูตรนี้) = รายได้ − ค่าใช้จ่าย − รายจ่ายเพื่อการออม = netIncome − savingsOutflow
+  // บวกกันแล้ว savingsOutflow หักล้างตัวเองเสมอ เหลือ netIncome ล้วนๆ — ถูกต้องตามนิยาม เพราะ §3.5 ไม่นับ
+  // รายจ่ายเพื่อการออมเป็น "ค่าใช้จ่าย" อยู่แล้ว เงินที่ไม่ถูกใช้จ่ายจริง (netIncome) จึงเท่ากับ "เงินออม" ทั้งก้อน
+  // ไม่ว่าจะโอนเข้าบัญชีออมจริงหรือค้างเป็นเงินสดเฉยๆ (คนละตัวกับ cashFlow.netCashFlow ของงบกระแสเงินสด C4
+  // ที่รวมเงินต้นผ่อนหนี้/เงินกู้ใหม่/ถอนเงินออมด้วย — บั๊กเดิมคือ reuse ตัวนั้นผิดจุด)
+  const savingRatio = f.totalIncome > 0 ? f.netIncome / f.totalIncome : null
   const netInvestmentToNetWorth = f.netWorth > 0 ? f.investedAssets / f.netWorth : null
 
   const liquidityStatus = passFail(liquidityRatio, (v) => v > 1, 'ผ่านเกณฑ์', 'ไม่ผ่านเกณฑ์', 'ไม่มีหนี้สินระยะสั้น')
