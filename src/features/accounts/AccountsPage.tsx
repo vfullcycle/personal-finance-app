@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAccounts, type AccountRow } from './useAccounts'
 import { AccountFormDialog } from './AccountFormDialog'
 import { formatSatangAsBaht } from '../../lib/money'
@@ -60,6 +61,9 @@ export function AccountsPage() {
             {t.label}
           </button>
         ))}
+        <Link to="/tax" className="tab">
+          ภาษี
+        </Link>
       </div>
 
       <button

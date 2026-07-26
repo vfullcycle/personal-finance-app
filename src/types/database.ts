@@ -362,6 +362,363 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_brackets: {
+        Row: {
+          config_version_id: string
+          id: string
+          max_income_satang: number | null
+          min_income_satang: number
+          rate_percent: number
+          seq: number
+        }
+        Insert: {
+          config_version_id: string
+          id?: string
+          max_income_satang?: number | null
+          min_income_satang: number
+          rate_percent: number
+          seq: number
+        }
+        Update: {
+          config_version_id?: string
+          id?: string
+          max_income_satang?: number | null
+          min_income_satang?: number
+          rate_percent?: number
+          seq?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_brackets_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "tax_config_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_brackets_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "v_tax_config_current"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_config_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          id: string
+          life_health_combined_cap_satang: number
+          note: string | null
+          retirement_combined_cap_satang: number
+          section48_2_exempt_tax_satang: number
+          section48_2_rate_percent: number
+          section48_2_threshold_satang: number
+          tax_year: number
+          version_no: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from: string
+          id?: string
+          life_health_combined_cap_satang?: number
+          note?: string | null
+          retirement_combined_cap_satang: number
+          section48_2_exempt_tax_satang: number
+          section48_2_rate_percent: number
+          section48_2_threshold_satang: number
+          tax_year: number
+          version_no: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          id?: string
+          life_health_combined_cap_satang?: number
+          note?: string | null
+          retirement_combined_cap_satang?: number
+          section48_2_exempt_tax_satang?: number
+          section48_2_rate_percent?: number
+          section48_2_threshold_satang?: number
+          tax_year?: number
+          version_no?: number
+        }
+        Relationships: []
+      }
+      tax_deduction_items: {
+        Row: {
+          calc_type: string
+          cap_satang: number | null
+          category: string
+          config_version_id: string
+          double_amount: boolean
+          id: string
+          key: string
+          label_th: string
+          life_health_group: boolean
+          note: string | null
+          percent_rate: number | null
+          retirement_group: boolean
+          sort_order: number
+          unit_amount_satang: number | null
+        }
+        Insert: {
+          calc_type: string
+          cap_satang?: number | null
+          category: string
+          config_version_id: string
+          double_amount?: boolean
+          id?: string
+          key: string
+          label_th: string
+          life_health_group?: boolean
+          note?: string | null
+          percent_rate?: number | null
+          retirement_group?: boolean
+          sort_order?: number
+          unit_amount_satang?: number | null
+        }
+        Update: {
+          calc_type?: string
+          cap_satang?: number | null
+          category?: string
+          config_version_id?: string
+          double_amount?: boolean
+          id?: string
+          key?: string
+          label_th?: string
+          life_health_group?: boolean
+          note?: string | null
+          percent_rate?: number | null
+          retirement_group?: boolean
+          sort_order?: number
+          unit_amount_satang?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_deduction_items_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "tax_config_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_deduction_items_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "v_tax_config_current"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_expense_rules: {
+        Row: {
+          allow_actual: boolean
+          alt_label: string | null
+          alt_rate_percent: number | null
+          cap_satang: number | null
+          config_version_id: string
+          default_rate_percent: number
+          id: string
+          income_type: string
+          shared_group: string | null
+          uses_category_table: boolean
+        }
+        Insert: {
+          allow_actual?: boolean
+          alt_label?: string | null
+          alt_rate_percent?: number | null
+          cap_satang?: number | null
+          config_version_id: string
+          default_rate_percent?: number
+          id?: string
+          income_type: string
+          shared_group?: string | null
+          uses_category_table?: boolean
+        }
+        Update: {
+          allow_actual?: boolean
+          alt_label?: string | null
+          alt_rate_percent?: number | null
+          cap_satang?: number | null
+          config_version_id?: string
+          default_rate_percent?: number
+          id?: string
+          income_type?: string
+          shared_group?: string | null
+          uses_category_table?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_expense_rules_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "tax_config_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_expense_rules_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "v_tax_config_current"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_rental_expense_rates: {
+        Row: {
+          category_key: string
+          config_version_id: string
+          id: string
+          label_th: string
+          rate_percent: number
+        }
+        Insert: {
+          category_key: string
+          config_version_id: string
+          id?: string
+          label_th: string
+          rate_percent: number
+        }
+        Update: {
+          category_key?: string
+          config_version_id?: string
+          id?: string
+          label_th?: string
+          rate_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_rental_expense_rates_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "tax_config_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_rental_expense_rates_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "v_tax_config_current"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_return_deductions: {
+        Row: {
+          amount_satang: number
+          item_key: string
+          tax_year: number
+          user_id: string
+        }
+        Insert: {
+          amount_satang?: number
+          item_key: string
+          tax_year: number
+          user_id: string
+        }
+        Update: {
+          amount_satang?: number
+          item_key?: string
+          tax_year?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tax_returns: {
+        Row: {
+          child_first_count: number
+          child_subsequent_count: number
+          config_version_id: string | null
+          created_at: string
+          disabled_dependent_count: number
+          expense_method_choices: Json
+          has_spouse_no_income: boolean
+          parent_count: number
+          pnd94_paid_satang: number
+          tax_year: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          child_first_count?: number
+          child_subsequent_count?: number
+          config_version_id?: string | null
+          created_at?: string
+          disabled_dependent_count?: number
+          expense_method_choices?: Json
+          has_spouse_no_income?: boolean
+          parent_count?: number
+          pnd94_paid_satang?: number
+          tax_year: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          child_first_count?: number
+          child_subsequent_count?: number
+          config_version_id?: string | null
+          created_at?: string
+          disabled_dependent_count?: number
+          expense_method_choices?: Json
+          has_spouse_no_income?: boolean
+          parent_count?: number
+          pnd94_paid_satang?: number
+          tax_year?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_returns_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "tax_config_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_returns_config_version_id_fkey"
+            columns: ["config_version_id"]
+            isOneToOne: false
+            referencedRelation: "v_tax_config_current"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_withholding_entries: {
+        Row: {
+          amount_satang: number
+          created_at: string
+          id: string
+          note: string | null
+          source_label: string
+          tax_year: number
+          user_id: string
+        }
+        Insert: {
+          amount_satang: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          source_label: string
+          tax_year: number
+          user_id: string
+        }
+        Update: {
+          amount_satang?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          source_label?: string
+          tax_year?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       transaction_legs: {
         Row: {
           account_id: string
@@ -521,6 +878,23 @@ export type Database = {
         }
         Relationships: []
       }
+      v_tax_config_current: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          effective_from: string | null
+          id: string | null
+          life_health_combined_cap_satang: number | null
+          note: string | null
+          retirement_combined_cap_satang: number | null
+          section48_2_exempt_tax_satang: number | null
+          section48_2_rate_percent: number | null
+          section48_2_threshold_satang: number | null
+          tax_year: number | null
+          version_no: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       fn_account_balances_as_of: {
@@ -548,6 +922,7 @@ export type Database = {
         }[]
       }
       get_login_email: { Args: { p_username: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
       is_username_available: { Args: { p_username: string }; Returns: boolean }
     }
     Enums: {
