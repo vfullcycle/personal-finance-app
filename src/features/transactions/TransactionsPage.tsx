@@ -37,6 +37,7 @@ export function TransactionsPage() {
   const { tags } = useTags()
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [editing, setEditing] = useState<TransactionDetail | null>(null)
+  const [duplicating, setDuplicating] = useState<TransactionDetail | null>(null)
 
   const monthLabel = anchor.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })
 
@@ -136,9 +137,23 @@ export function TransactionsPage() {
                   {t.payee ? ` · ${t.payee}` : ''}
                 </div>
               </div>
-              <div className={`item-row-balance${flow === 'expense' ? ' negative' : ''}`}>
-                {flow === 'expense' ? '-' : flow === 'income' ? '+' : ''}
-                {formatSatangAsBaht(amount)} บาท
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className={`item-row-balance${flow === 'expense' ? ' negative' : ''}`}>
+                  {flow === 'expense' ? '-' : flow === 'income' ? '+' : ''}
+                  {formatSatangAsBaht(amount)} บาท
+                </div>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  className="btn-secondary btn"
+                  style={{ minHeight: 36, padding: '0 12px', fontSize: 13 }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setDuplicating(t)
+                  }}
+                >
+                  ทำซ้ำ
+                </span>
               </div>
             </button>
           )
@@ -152,6 +167,19 @@ export function TransactionsPage() {
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null)
+            refresh()
+          }}
+        />
+      )}
+
+      {duplicating && (
+        <TransactionFormDialog
+          flow={detectFlow(duplicating.legs)}
+          initial={duplicating}
+          mode="duplicate"
+          onClose={() => setDuplicating(null)}
+          onSaved={() => {
+            setDuplicating(null)
             refresh()
           }}
         />

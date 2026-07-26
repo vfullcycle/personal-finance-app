@@ -29,16 +29,18 @@ function splitFromLegs(legs: TransactionDetail['legs'], typeId: string, signPosi
 export function TransactionFormDialog({
   flow: flowProp,
   initial,
+  mode = 'edit',
   onClose,
   onSaved,
 }: {
   flow: FlowType
   initial: TransactionDetail | null
+  mode?: 'edit' | 'duplicate'
   onClose: () => void
   onSaved: () => void
 }) {
   const { user } = useAuth()
-  const isEdit = !!initial
+  const isEdit = !!initial && mode === 'edit'
   const flow = initial ? detectFlow(initial.legs) : flowProp
 
   const { accounts: assetLiabilityAccounts } = useAccounts(['asset', 'liability'])
@@ -46,7 +48,7 @@ export function TransactionFormDialog({
   const { accounts: expenseCategories } = useAccounts(['expense'])
   const assetAccounts = useMemo(() => assetLiabilityAccounts.filter((a) => a.type_id === 'asset'), [assetLiabilityAccounts])
 
-  const [occurredOn, setOccurredOn] = useState(initial?.occurred_on ?? todayLocalDateString())
+  const [occurredOn, setOccurredOn] = useState(mode === 'duplicate' ? todayLocalDateString() : (initial?.occurred_on ?? todayLocalDateString()))
   const [payee, setPayee] = useState(initial?.payee ?? '')
   const [note, setNote] = useState(initial?.note ?? '')
   const [tagIds, setTagIds] = useState<string[]>(initial?.tagIds ?? [])
@@ -223,7 +225,7 @@ export function TransactionFormDialog({
   const primaryCategories = flow === 'income' ? incomeCategories : expenseCategories
 
   return (
-    <Modal title={isEdit ? `แก้ไข${FLOW_LABEL[flow]}` : FLOW_LABEL[flow]} onClose={onClose}>
+    <Modal title={isEdit ? `แก้ไข${FLOW_LABEL[flow]}` : mode === 'duplicate' ? `ทำซ้ำ${FLOW_LABEL[flow]}` : FLOW_LABEL[flow]} onClose={onClose}>
       {error && <div className="banner-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="field">
