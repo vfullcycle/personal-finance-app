@@ -160,6 +160,120 @@ export type Database = {
           },
         ]
       }
+      budget_baseline_items: {
+        Row: {
+          account_id: string
+          amount_per_period_satang: number
+          created_at: string
+          growth_percent_per_year: number
+          id: string
+          is_active: boolean
+          period: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount_per_period_satang: number
+          created_at?: string
+          growth_percent_per_year?: number
+          id?: string
+          is_active?: boolean
+          period: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount_per_period_satang?: number
+          created_at?: string
+          growth_percent_per_year?: number
+          id?: string
+          is_active?: boolean
+          period?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_baseline_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_baseline_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_account_balances"
+            referencedColumns: ["account_id"]
+          },
+        ]
+      }
+      budget_schedule_items: {
+        Row: {
+          account_id: string
+          amount_per_occurrence_satang: number
+          created_at: string
+          direction: string
+          frequency: string
+          growth_percent_per_year: number
+          id: string
+          name: string
+          start_month: number | null
+          updated_at: string
+          user_id: string
+          year_end: number
+          year_start: number
+        }
+        Insert: {
+          account_id: string
+          amount_per_occurrence_satang: number
+          created_at?: string
+          direction: string
+          frequency: string
+          growth_percent_per_year?: number
+          id?: string
+          name: string
+          start_month?: number | null
+          updated_at?: string
+          user_id: string
+          year_end: number
+          year_start: number
+        }
+        Update: {
+          account_id?: string
+          amount_per_occurrence_satang?: number
+          created_at?: string
+          direction?: string
+          frequency?: string
+          growth_percent_per_year?: number
+          id?: string
+          name?: string
+          start_month?: number | null
+          updated_at?: string
+          user_id?: string
+          year_end?: number
+          year_start?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_schedule_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_schedule_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "v_account_balances"
+            referencedColumns: ["account_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

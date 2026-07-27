@@ -5,9 +5,9 @@ import { useDueRecurring } from '../features/transactions/useDueRecurring'
 const NAV_ITEMS = [
   { to: '/transactions', label: 'รายการ', icon: '📝' },
   { to: '/accounts', label: 'บัญชี', icon: '💰' },
-  { to: '/recurring', label: 'ประจำ', icon: '🔁' },
   { to: '/reports', label: 'รายงาน', icon: '📊' },
   { to: '/analysis', label: 'วิเคราะห์', icon: '📈' },
+  { to: '/budget', label: 'งบประมาณ', icon: '🎯' },
   { to: '/settings', label: 'ตั้งค่า', icon: '⚙️' },
 ]
 

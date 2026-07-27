@@ -2,6 +2,18 @@
 
 รูปแบบ: `## <ฟีเจอร์> vX.Y — <วันที่>` ตามโปรโตคอลใน `PROJECT_BIBLE.md` §7
 
+## Budget v1.0 (ช่วง 1/4) — 27 ก.ค. 2569
+
+- M7 (บางส่วน): โครงสร้าง budget 2 ชั้น — หน้า `/budget` ใหม่ 2 แท็บ: **งบประจำ** (ชั้น A, baseline ไม่มีปีเริ่ม-จบ) / **แผนกำหนดการ** (ชั้น B, ผูกช่วงปีเฉพาะ) — ดูรายละเอียด schema/UX ใน `SPEC-budget.md`
+  - ชั้น A: จำนวน/เดือนหรือ/ปี + growth%/ปี ผูกหมวด income/expense/asset(savings) — ทิศทาง derive จาก account type ไม่เก็บแยก
+  - ชั้น B: ทิศทาง (จ่ายออก/รับเข้า/โยกเข้าสินทรัพย์) เป็น field จริง + ความถี่ 5 แบบ (เพิ่ม "ครั้งเดียว") + ปีเริ่ม-จบ (พ.ศ.) + เดือนเริ่มงวด — trigger บังคับ direction↔account type ตรงกันที่ชั้น DB
+  - หนี้ที่ตั้งค่าเงินกู้ครบแล้ว (C3) ไม่มีในดรอปดาวน์ชั้น B เลย — เว้นไว้ให้ projection (ช่วง 2) ดึง amortization schedule มาใช้อัตโนมัติ
+- **จัดที่ทาง nav** (ตกลงเพิ่มระหว่างแชต): ย้าย "ประจำ" ออกจาก bottom nav หลัก → ปุ่ม "รายการประจำ →" มุมขวาบนของ `/transactions` แทน เปิดที่ให้ "งบประมาณ" 🎯 เข้า bottom nav (คงไว้ 6 รายการตาม §8.1)
+- **แก้บั๊ก take-home ค้างมาตั้งแต่ C5/C6** (`ratioCalculations.ts`): เดิมใช้รายได้ก่อนหักภาษีจริงมาคำนวณ DSR/Non-Mortgage DSR ในหน้า `/analysis` — แก้ให้ประเมินภาษีจริงจากรายได้ 12 เดือนล่าสุดผ่าน `calculateTaxReturn` (C6, ปีภาษีล่าสุดที่มี config + ค่าลดหย่อนที่เคยกรอกไว้จริง) fallback เป็นพฤติกรรมเดิมถ้ายังไม่เคยตั้งค่าภาษีเลย พร้อม caveat ข้อความใต้ตารางที่เปลี่ยนตามสถานะ
+- Migration ใหม่ 1 ไฟล์ (additive): `budget_baseline_items` + `budget_schedule_items` พร้อม RLS + trigger บังคับความสอดคล้อง account/direction
+- ทดสอบผ่าน: live browser testing (Playwright ชั่วคราว + test user สร้าง/ลบผ่าน Supabase Admin API ไม่ทิ้งรอยในโปรเจกต์จริง) ครบ flow nav ใหม่, CRUD ชั้น A/B, toggle ทิศทางกรองบัญชีถูกต้อง, หน้า `/analysis` โหลดพร้อม take-home ใหม่ — ไม่มี console error, `tsc --noEmit`/`oxlint` ผ่านสะอาด
+- หมายเหตุ scope: เป็นช่วง 1/4 ของ C7 (Budget+Projection+Import/Export) — projection engine/variance/import-export ยังไม่ทำ (ช่วง 2-4 ถัดไป)
+
 ## Analysis v1.1 — 26 ก.ค. 2569
 
 - แก้บั๊ก Saving Ratio (`buildRatioGroups`, `src/features/analysis/ratioCalculations.ts`): เดิม (v1.0) reuse `cashFlow.netCashFlow` ของงบกระแสเงินสด C4 (รวมเงินต้นผ่อนหนี้/เงินกู้ใหม่/ถอนเงินออมด้วย) ผิดจุด — ตาม REQUIREMENTS §7 "กระแสเงินสดสุทธิ" ของสูตรนี้ต้องเป็น `รายได้ − ค่าใช้จ่าย − รายจ่ายเพื่อการออม` เท่านั้น ผลคือมีเคสได้ Saving Ratio 184.8% (เป็นไปไม่ได้ทางคณิตศาสตร์) เจอระหว่าง UAT จริงของวี — แก้ให้ตรงนิยาม สรุปแล้วสูตรที่ถูกต้องลดรูปเหลือ `netIncome ÷ totalIncome` ตรงๆ (พิสูจน์ด้วยพีชคณิต, `tsc --noEmit` ผ่าน) ดูรายละเอียดใน `SPEC-analysis.md`

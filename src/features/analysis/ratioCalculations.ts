@@ -3,6 +3,8 @@
 // (หรือเท่าที่มีข้อมูลจริงถ้าเปิดบัญชีมาไม่ถึง 12 เดือน) — reuse ตัวแปรจาก reportCalculations.ts (C4) ไม่คำนวณซ้ำ
 import { buildCashFlowStatement, buildIncomeStatement, type ReportLeg } from '../reports/reportCalculations'
 import type { BalanceAsOfRow } from '../reports/useBalancesAsOf'
+import type { IncomeByType } from '../tax/types'
+import type { IncomeType } from '../accounts/constants'
 
 export type RatioStatus = 'pass' | 'fail' | 'info' | 'na'
 
@@ -43,6 +45,21 @@ export type AnalysisFigures = {
   totalDebtService: number
   monthlyDebtService: number
   nonMortgageDebtService: number
+  // take-home หลังหักภาษีจริงหรือไม่ — false = fallback เดิม (ไม่มี tax config/return ให้ประเมิน)
+  takeHomeIsAfterTax: boolean
+}
+
+// กลุ่มรายได้ตาม 40(1)-(8) จาก legs ที่ดึงมาแล้ว (ช่วง 12 เดือนล่าสุดของ ratio ไม่ใช่ปีภาษีปฏิทิน)
+// ใช้ประเมินภาษีจริงแบบ "ผลรวมรายได้ 12 เดือนล่าสุด" ผ่าน calculateTaxReturn เพื่อหัก take-home ให้แม่นกว่ารายได้ก่อนหักภาษี
+export function buildIncomeByTypeFromLegs(legs: ReportLeg[]): IncomeByType {
+  const totals: IncomeByType = {}
+  for (const leg of legs) {
+    const acc = leg.account
+    if (!acc.taxable || !acc.income_type) continue
+    const type = acc.income_type as IncomeType
+    totals[type] = (totals[type] ?? 0) + -leg.amount
+  }
+  return totals
 }
 
 // ธุรกรรมไหนมี debit leg บนหนี้สิน subtype=loan ให้ debit leg ฝั่ง expense ที่อยู่ธุรกรรมเดียวกัน = ดอกเบี้ยของเงินกู้ก้อนนั้น
@@ -88,7 +105,13 @@ function monthsOfDataAvailable(legs: ReportLeg[], asOf: string): number {
   return Math.min(12, Math.max(1, months))
 }
 
-export function calculateAnalysisFigures(legs: ReportLeg[], balanceRows: BalanceAsOfRow[], asOf: string): AnalysisFigures {
+export function calculateAnalysisFigures(
+  legs: ReportLeg[],
+  balanceRows: BalanceAsOfRow[],
+  asOf: string,
+  // ภาษีประเมินจากรายได้จริง 12 เดือนล่าสุด (calculateTaxReturn) — null = ไม่มี tax config/return ให้ประเมิน (fallback pre-tax)
+  estimatedTaxSatang: number | null = null,
+): AnalysisFigures {
   const months = monthsOfDataAvailable(legs, asOf)
 
   const liquidAssets = sumBalance(balanceRows, (r) => r.type_id === 'asset' && r.asset_liquidity === 'liquid')
@@ -116,8 +139,9 @@ export function calculateAnalysisFigures(legs: ReportLeg[], balanceRows: Balance
     totalLiabilities,
     netWorth: totalAssets - totalLiabilities,
     totalIncome: incomeStatement.totalIncome,
-    // take-home (รายได้สุทธิ) เฟส 1 = รายได้รวมตามที่บันทึกจริง ยังไม่หักภาษี (Thai PIT อยู่ C6)
-    monthlyTakeHome: incomeStatement.totalIncome / months,
+    // take-home (รายได้สุทธิ) = รายได้รวม − ภาษีที่ประเมินจริงจาก calculateTaxReturn (C6) ถ้ามี config/tax return ให้ใช้
+    // ไม่มี (ผู้ใช้ยังไม่เคยกรอกภาษีเลย) → fallback เป็นรายได้ก่อนหักภาษีเหมือนเดิม (เฟส 1)
+    monthlyTakeHome: (incomeStatement.totalIncome - (estimatedTaxSatang ?? 0)) / months,
     monthlyExpense: totalExpense / months,
     netIncome: incomeStatement.netIncome,
     netCashFlow: cashFlow.netCashFlow,
@@ -126,6 +150,7 @@ export function calculateAnalysisFigures(legs: ReportLeg[], balanceRows: Balance
     totalDebtService,
     monthlyDebtService: totalDebtService / months,
     nonMortgageDebtService,
+    takeHomeIsAfterTax: estimatedTaxSatang !== null,
   }
 }
 

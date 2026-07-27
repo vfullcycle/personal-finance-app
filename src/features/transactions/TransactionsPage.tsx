@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { formatSatangAsBaht } from '../../lib/money'
 import { toLocalDateString } from '../../lib/date'
 import { TransactionFormDialog } from './TransactionFormDialog'
@@ -59,6 +60,9 @@ export function TransactionsPage() {
     <div className="page">
       <div className="list-header">
         <h1>รายการ</h1>
+        <Link to="/recurring" className="btn-secondary btn">
+          รายการประจำ →
+        </Link>
       </div>
 
       <div className="list-header">

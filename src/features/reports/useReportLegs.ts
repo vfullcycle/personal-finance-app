@@ -14,6 +14,8 @@ type RawRow = {
       subtype: string | null
       cashflow_class: string | null
       is_mortgage: boolean
+      taxable: boolean
+      income_type: string | null
     }
   }[]
 }
@@ -38,8 +40,8 @@ export function useReportLegs(range: { from: string; to: string } | null, tagId?
     setError(null)
 
     const columns = tagId
-      ? 'id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage)), transaction_tags!inner(tag_id)'
-      : 'id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage))'
+      ? 'id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage, taxable, income_type)), transaction_tags!inner(tag_id)'
+      : 'id, occurred_on, transaction_legs(amount, accounts(id, name, type_id, subtype, cashflow_class, is_mortgage, taxable, income_type))'
 
     let query = supabase.from('transactions').select(columns).gte('occurred_on', range.from).lte('occurred_on', range.to)
     if (tagId) query = query.eq('transaction_tags.tag_id', tagId)

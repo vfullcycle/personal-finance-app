@@ -13,6 +13,7 @@ import { RecurringPage } from './features/transactions/RecurringPage'
 import { ReportsPage } from './features/reports/ReportsPage'
 import { AnalysisPage } from './features/analysis/AnalysisPage'
 import { TaxPage } from './features/tax/TaxPage'
+import { BudgetPage } from './features/budget/BudgetPage'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/analysis" element={<AnalysisPage />} />
         <Route path="/tax" element={<TaxPage />} />
+        <Route path="/budget" element={<BudgetPage />} />
         <Route path="/accounts" element={<AccountsPage />} />
         <Route path="/categories" element={<Navigate to="/settings?tab=categories" replace />} />
         <Route path="/settings" element={<SettingsPage />} />

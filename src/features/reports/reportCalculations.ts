@@ -11,6 +11,9 @@ export type ReportLeg = {
     subtype: string | null
     cashflow_class: string | null
     is_mortgage: boolean
+    // เฉพาะ income account — ใช้คำนวณภาษีจริงสำหรับ take-home ของ ratio (analysis) ไม่ใช้ในงบ C4
+    taxable?: boolean
+    income_type?: string | null
   }
 }
 
