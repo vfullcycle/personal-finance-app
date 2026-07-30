@@ -34,7 +34,7 @@ export function TaxPage() {
   const { config, loading: configLoading, error: configError, refresh: refreshConfig } = useTaxConfig(taxYear)
   const { incomeByType, loading: incomeLoading } = useTaxableIncome(taxYear)
   const { header, loading: headerLoading, save: saveHeader } = useTaxReturn(taxYear)
-  const { entries, loading: entriesLoading, saveItem } = useTaxReturnDeductions(taxYear)
+  const { entries, projectionFlags, loading: entriesLoading, saveItem } = useTaxReturnDeductions(taxYear)
   const withholding = useWithholding(taxYear)
 
   const loading = configLoading || incomeLoading || headerLoading || entriesLoading
@@ -88,6 +88,7 @@ export function TaxPage() {
               incomeByType={incomeByType}
               header={header}
               entries={entries}
+              projectionFlags={projectionFlags}
               saveHeader={saveHeader}
               saveEntry={saveItem}
             />

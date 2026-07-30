@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import type { BudgetScheduleItem } from './types'
+import type { BudgetItem } from './types'
 
-export type BudgetScheduleRow = BudgetScheduleItem & { accountName: string }
+export type BudgetItemRow = BudgetItem & { accountName: string }
 
-// รายการแผนกำหนดการ (ชั้น B) — join ชื่อบัญชีมาแสดงผล เรียงตามปีเริ่มก่อน
-export function useBudgetSchedule() {
-  const [items, setItems] = useState<BudgetScheduleRow[]>([])
+// รายการงบประมาณ (รวมชั้น A+B เดิม) — join ชื่อบัญชีมาแสดงผล (name ของรายการเองเป็น optional, ไม่กรอกไว้ก็ fallback ไปใช้ชื่อบัญชี)
+export function useBudgetItems() {
+  const [items, setItems] = useState<BudgetItemRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -14,10 +14,7 @@ export function useBudgetSchedule() {
     setLoading(true)
     setError(null)
 
-    const { data, error: fetchError } = await supabase
-      .from('budget_schedule_items')
-      .select('*, accounts(name)')
-      .order('year_start')
+    const { data, error: fetchError } = await supabase.from('budget_items').select('*, accounts(name)').order('start_date')
 
     if (fetchError) {
       setError(fetchError.message)

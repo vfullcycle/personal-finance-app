@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { bahtToSatang, satangToBaht } from '../../lib/money'
 import { INCOME_TYPE_LABEL } from '../accounts/constants'
 import { DEDUCTION_CATEGORY_LABEL, DEDUCTION_CATEGORY_ORDER } from './constants'
+import type { ProjectionFlags } from './useTaxReturnDeductions'
 import type { DeductionEntries, ExpenseMethodChoices, FullTaxConfig, IncomeByType, TaxReturnHeader } from './types'
 
 const PER_DEPENDENT_FIELD_LABEL: Record<string, keyof TaxReturnHeader> = {
@@ -16,6 +17,7 @@ export function DeductionsTab({
   incomeByType,
   header,
   entries,
+  projectionFlags,
   saveHeader,
   saveEntry,
 }: {
@@ -23,11 +25,13 @@ export function DeductionsTab({
   incomeByType: IncomeByType
   header: TaxReturnHeader
   entries: DeductionEntries
+  projectionFlags: ProjectionFlags
   saveHeader: (h: TaxReturnHeader, configVersionId?: string) => Promise<{ error: string | null }>
-  saveEntry: (key: string, amountSatang: number) => Promise<{ error: string | null }>
+  saveEntry: (key: string, amountSatang: number, useInProjection: boolean) => Promise<{ error: string | null }>
 }) {
   const [local, setLocal] = useState<TaxReturnHeader>(header)
   const [entryDrafts, setEntryDrafts] = useState<Record<string, string>>({})
+  const [flagDrafts, setFlagDrafts] = useState<ProjectionFlags>({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -38,6 +42,7 @@ export function DeductionsTab({
     for (const [key, value] of Object.entries(entries)) drafts[key] = String(satangToBaht(value))
     setEntryDrafts(drafts)
   }, [entries])
+  useEffect(() => setFlagDrafts(projectionFlags), [projectionFlags])
 
   const setChoice = (type: '40(5)' | '40(6)' | '40(7)' | '40(8)', choice: ExpenseMethodChoices[typeof type]) => {
     setLocal((prev) => ({ ...prev, expense_method_choices: { ...prev.expense_method_choices, [type]: choice } }))
@@ -58,8 +63,9 @@ export function DeductionsTab({
     for (const item of config.deductionItems.filter((i) => i.calc_type === 'user_amount')) {
       const draft = entryDrafts[item.key]
       const amount = draft ? bahtToSatang(draft) : 0
-      if (amount !== (entries[item.key] ?? 0)) {
-        const r = await saveEntry(item.key, amount)
+      const useInProjection = flagDrafts[item.key] ?? false
+      if (amount !== (entries[item.key] ?? 0) || useInProjection !== (projectionFlags[item.key] ?? false)) {
+        const r = await saveEntry(item.key, amount, useInProjection)
         if (r.error) {
           setError(r.error)
           setSaving(false)
@@ -271,6 +277,15 @@ export function DeductionsTab({
                     onChange={(e) => setEntryDrafts((prev) => ({ ...prev, [item.key]: e.target.value }))}
                   />
                   {item.note && <div className="field-hint">{item.note}</div>}
+                  <div className="checkbox-field">
+                    <input
+                      id={`${item.key}_useInProjection`}
+                      type="checkbox"
+                      checked={flagDrafts[item.key] ?? false}
+                      onChange={(e) => setFlagDrafts((prev) => ({ ...prev, [item.key]: e.target.checked }))}
+                    />
+                    <label htmlFor={`${item.key}_useInProjection`}>ใช้ค่านี้ในงบประมาณด้วย</label>
+                  </div>
                 </div>
               ))}
             </div>

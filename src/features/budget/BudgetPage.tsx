@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { BaselineTab } from './BaselineTab'
-import { ScheduleTab } from './ScheduleTab'
+import { BudgetItemsTab } from './BudgetItemsTab'
+import { ProjectionTab } from './ProjectionTab'
 
-type BudgetTab = 'baseline' | 'schedule'
+type BudgetTab = 'items' | 'projection'
 
 const TABS: { id: BudgetTab; label: string }[] = [
-  { id: 'baseline', label: 'งบประจำ' },
-  { id: 'schedule', label: 'แผนกำหนดการ' },
+  { id: 'items', label: 'รายการงบประมาณ' },
+  { id: 'projection', label: 'คาดการณ์' },
 ]
 
 export function BudgetPage() {
-  const [activeTab, setActiveTab] = useState<BudgetTab>('baseline')
+  const [activeTab, setActiveTab] = useState<BudgetTab>('items')
 
   return (
     <div className="page">
@@ -31,8 +31,8 @@ export function BudgetPage() {
         ))}
       </div>
 
-      {activeTab === 'baseline' && <BaselineTab />}
-      {activeTab === 'schedule' && <ScheduleTab />}
+      {activeTab === 'items' && <BudgetItemsTab />}
+      {activeTab === 'projection' && <ProjectionTab />}
     </div>
   )
 }

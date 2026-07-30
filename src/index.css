@@ -758,3 +758,48 @@ input, select {
     gap: 12px;
   }
 }
+
+/* ตารางกว้าง (เช่น projection matrix) — จอเล็กเลื่อนแนวนอน + ตรึงคอลัมน์แรก ตาม REQUIREMENTS §8.1 */
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.data-table th,
+.data-table td {
+  padding: 8px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+}
+
+.data-table thead th {
+  color: var(--text-muted);
+  font-weight: 600;
+  background: var(--surface);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table .data-table-year-header td {
+  background: var(--brand-bg);
+  font-weight: 600;
+  color: var(--brand-dark);
+}
