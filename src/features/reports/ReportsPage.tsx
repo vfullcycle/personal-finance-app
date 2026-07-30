@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { formatSatangAsBaht } from '../../lib/money'
-import { todayLocalDateString } from '../../lib/date'
-import { getCompareRange, getRange, type CompareMode, type PeriodType } from './period'
+import { getCompareRange, getRange, type CompareMode, type DateRange, type PeriodType } from './period'
 import { PeriodPicker } from './PeriodPicker'
 import { IncomeStatementReport } from './IncomeStatementReport'
 import { CashFlowReport } from './CashFlowReport'
@@ -22,11 +21,11 @@ const TABS: { id: ReportTab; label: string }[] = [
   { id: 'tag', label: 'ตามแท็ก' },
 ]
 
-function SummaryCard() {
-  const today = todayLocalDateString()
-  const { rows } = useBalancesAsOf(today)
-  const thisMonth = getRange(new Date(), 'month')
-  const { legs } = useReportLegs(thisMonth)
+// v1.3: การ์ดสรุปตามช่วงที่กำลังเลื่อนดูอยู่ (range/anchor เดียวกับแท็บด้านล่าง) แทนที่จะตรึงเดือนปฏิทินจริงเสมอ
+// เดิมใช้ getRange(new Date(), 'month') คงที่ ทำให้เลื่อนดูเดือนอื่นด้านล่างแล้วตัวเลขบนการ์ดไม่ขยับตาม สับสนว่าทำไมไม่เปลี่ยน
+function SummaryCard({ range }: { range: DateRange }) {
+  const { rows } = useBalancesAsOf(range.asOf)
+  const { legs } = useReportLegs(range)
 
   const netWorth = buildBalanceSheet(rows).netWorth
   const cf = buildCashFlowStatement(legs)
@@ -34,15 +33,15 @@ function SummaryCard() {
   return (
     <div className="report-summary-grid">
       <div className="report-summary-tile">
-        <div className="report-summary-label">Net worth ปัจจุบัน</div>
+        <div className="report-summary-label">Net worth ณ {range.label}</div>
         <div className={`report-summary-value${netWorth < 0 ? ' negative' : ''}`}>{formatSatangAsBaht(netWorth)} บาท</div>
       </div>
       <div className="report-summary-tile">
-        <div className="report-summary-label">กระแสเงินสดสุทธิเดือนนี้</div>
+        <div className="report-summary-label">กระแสเงินสดสุทธิ ({range.label})</div>
         <div className={`report-summary-value${cf.netCashFlow < 0 ? ' negative' : ''}`}>{formatSatangAsBaht(cf.netCashFlow)} บาท</div>
       </div>
       <div className="report-summary-tile">
-        <div className="report-summary-label">กำไรสุทธิเดือนนี้</div>
+        <div className="report-summary-label">กำไรสุทธิ ({range.label})</div>
         <div className={`report-summary-value${cf.netIncome < 0 ? ' negative' : ''}`}>{formatSatangAsBaht(cf.netIncome)} บาท</div>
       </div>
     </div>
@@ -64,7 +63,7 @@ export function ReportsPage() {
         <h1>รายงาน</h1>
       </div>
 
-      <SummaryCard />
+      <SummaryCard range={range} />
 
       <div className="tabs">
         {TABS.map((t) => (
