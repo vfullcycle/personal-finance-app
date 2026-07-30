@@ -68,12 +68,15 @@ export type CashFlowStatement = {
   savingsWithdrawal: number
   principalRepayment: number
   newLoanProceeds: number
+  creditCardPayment: number
   netIncome: number
   netCashFlow: number
-  /** ส่วนต่างงบรายได้ๆ vs กระแสเงินสด = เงินออม + เงินต้นผ่อนหนี้ หัก เงินถอนออม + เงินกู้ใหม่ (net worth คงที่แต่เงินสดไหลออก/เข้าจริง) */
+  /** ส่วนต่างงบรายได้ๆ vs กระแสเงินสด = เงินออม+ลงทุน+สินทรัพย์อื่น+เงินต้นผ่อนหนี้+ชำระบัตร หัก เงินถอนออม+เงินกู้ใหม่ (net worth คงที่แต่เงินสดไหลออก/เข้าจริง) */
   diffFromNetIncome: number
 }
 
+// v1.2: เพิ่มการนับ "ชำระบัตรเครดิต" + ขยาย "เงินออม/ลงทุน" ให้ครอบคลุมสินทรัพย์อื่น (ลูกหนี้/ลงทุนทั่วไป/other_asset) ไม่ใช่แค่ cashflow_class=savings
+// เจอบั๊กจริงจาก UAT ของวี: โอนชำระบัตรเครดิต + โอนให้ยืมเงิน (ลูกหนี้) ไม่ถูกนับเป็นเงินสดไหลออกเลย ทำให้กระทบยอดกับเงินสดจริงไม่ตรง
 export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
   let totalIncome = 0
   let fixedExpense = 0
@@ -83,6 +86,7 @@ export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
   let savingsWithdrawal = 0
   let principalRepayment = 0
   let newLoanProceeds = 0
+  let creditCardPayment = 0
 
   for (const leg of legs) {
     const { type_id, subtype, cashflow_class } = leg.account
@@ -92,18 +96,23 @@ export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
       if (cashflow_class === 'fixed') fixedExpense += leg.amount
       else if (cashflow_class === 'variable') variableExpense += leg.amount
       else uncategorizedExpense += leg.amount
-    } else if (type_id === 'asset' && cashflow_class === 'savings') {
-      if (leg.amount > 0) savingsOutflow += leg.amount // โอนเข้าถังออม/ลงทุน — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง (§3.5)
-      else savingsWithdrawal += -leg.amount // โอนออกจากถังออม/ลงทุนกลับมาใช้ — เงินสดไหลเข้าจริง
+    } else if (type_id === 'asset' && (cashflow_class === 'savings' || subtype === 'investment' || subtype === 'receivable' || subtype === 'other_asset')) {
+      // โอนเข้าถังออม/ลงทุน/ลูกหนี้/สินทรัพย์อื่น — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง (§3.5 + เคสลูกหนี้/สินทรัพย์อื่นที่ไม่ได้ติด savings ก็ยังเป็นเงินสดไหลออกจริงเหมือนกัน)
+      if (leg.amount > 0) savingsOutflow += leg.amount
+      else savingsWithdrawal += -leg.amount // โอนออกจากถังออม/ลงทุน/รับชำระหนี้จากลูกหนี้กลับมาใช้ — เงินสดไหลเข้าจริง
     } else if (type_id === 'liability' && subtype === 'loan') {
       if (leg.amount > 0) principalRepayment += leg.amount // เงินต้นลดหนี้ — ไม่ใช่ expense แต่เป็นเงินสดไหลออกจริง
       else newLoanProceeds += -leg.amount // รับเงินกู้ใหม่เข้ามา — เงินสดไหลเข้าจริง แม้ไม่ใช่รายได้
+    } else if (type_id === 'liability' && subtype === 'credit_card' && leg.amount > 0) {
+      // ชำระบัตรเครดิต (debit ลดหนี้) — เงินสดไหลออกจริง ต่างจากตอนรูดซื้อของ (credit leg บนบัตร) ที่นับเป็น expense ไปแล้วตอนรูด
+      // จึงนับเฉพาะฝั่งจ่าย ไม่นับฝั่งรูด (ไม่งั้นจะนับซ้ำกับ expense ทุกครั้งที่รูดบัตร)
+      creditCardPayment += leg.amount
     }
   }
 
   const totalExpense = fixedExpense + variableExpense + uncategorizedExpense
   const netIncome = totalIncome - totalExpense
-  const netCashFlow = netIncome - savingsOutflow - principalRepayment + savingsWithdrawal + newLoanProceeds
+  const netCashFlow = netIncome - savingsOutflow - principalRepayment - creditCardPayment + savingsWithdrawal + newLoanProceeds
 
   return {
     totalIncome,
@@ -114,6 +123,7 @@ export function buildCashFlowStatement(legs: ReportLeg[]): CashFlowStatement {
     savingsWithdrawal,
     principalRepayment,
     newLoanProceeds,
+    creditCardPayment,
     netIncome,
     netCashFlow,
     diffFromNetIncome: netIncome - netCashFlow,
