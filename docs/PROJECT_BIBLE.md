@@ -17,7 +17,7 @@
 repo เป็นแหล่งความจริงเดียว:
 - `docs/REQUIREMENTS.md` — requirement หลักที่ freeze แล้ว (แก้ได้เฉพาะผ่านการตกลงในแชตเก็บ requirement)
 - `docs/SPEC-<feature>.md` — spec ละเอียดรายฟีเจอร์
-- `docs/CHANGELOG.md` — บันทึกเวอร์ชันรายฟีเจอร์
+- `CHANGELOG.md` (root — ย้ายจาก `docs/CHANGELOG.md` เพื่อให้เห็นบน GitHub ทันที) — บันทึกเวอร์ชันรายฟีเจอร์
 - `/supabase/migrations`, `/src` — โค้ดจริง
 
 **ทุกแชตเริ่มด้วยการอ่าน REQUIREMENTS.md + spec ของฟีเจอร์ตัวเอง + โค้ดที่เกี่ยวข้องจาก repo ก่อนเสมอ**
