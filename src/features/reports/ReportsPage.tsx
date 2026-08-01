@@ -29,12 +29,21 @@ function SummaryCard({ range }: { range: DateRange }) {
 
   const netWorth = buildBalanceSheet(rows).netWorth
   const cf = buildCashFlowStatement(legs)
+  // v1.4: เงินสดคงเหลือ = ยอดสะสมบัญชีสภาพคล่อง (asset_liquidity=liquid) ณ วันที่ ไม่ใช่ผลรวมกระแสเงินสด
+  // (กระแสเงินสดสุทธิบอกแค่การเปลี่ยนแปลงในช่วง ไม่ใช่ยอดคงเหลือจริง ต้องรู้ยอดตั้งต้นด้วยถึงจะบวกกลับมาได้)
+  const cashOnHand = rows
+    .filter((r) => r.type_id === 'asset' && r.asset_liquidity === 'liquid')
+    .reduce((s, r) => s + r.balance, 0)
 
   return (
     <div className="report-summary-grid">
       <div className="report-summary-tile">
         <div className="report-summary-label">Net worth ณ {range.label}</div>
         <div className={`report-summary-value${netWorth < 0 ? ' negative' : ''}`}>{formatSatangAsBaht(netWorth)} บาท</div>
+      </div>
+      <div className="report-summary-tile">
+        <div className="report-summary-label">เงินสดคงเหลือ ณ {range.label}</div>
+        <div className={`report-summary-value${cashOnHand < 0 ? ' negative' : ''}`}>{formatSatangAsBaht(cashOnHand)} บาท</div>
       </div>
       <div className="report-summary-tile">
         <div className="report-summary-label">กระแสเงินสดสุทธิ ({range.label})</div>
