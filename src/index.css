@@ -576,6 +576,29 @@ input, select {
   border-bottom: none;
 }
 
+.split-history {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.9em;
+}
+
+.split-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+}
+
+.split-history li {
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.split-history li:last-child {
+  border-bottom: none;
+}
+
 /* reports */
 .report-summary-grid {
   display: grid;

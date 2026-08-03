@@ -15,15 +15,34 @@ import { FLOW_LABEL, type FlowType } from './types'
 import { detectFlow, type TransactionDetail } from './useTransactions'
 import { emitTransactionsChanged } from './events'
 
+// leg หลายอันของหมวดเดียวกัน (สะสมมาจากการกด "+" คนละครั้ง) — อันที่เก่าสุด (บันทึกครั้งแรก) แสดงเป็น
+// บรรทัดหลักที่แก้ไขได้ตามปกติ ส่วนอันที่เหลือ (เพิ่มมาทีหลัง) แสดงเป็นประวัติแบบ locked (อ่านอย่างเดียว)
 function splitFromLegs(legs: TransactionDetail['legs'], typeId: string, signPositive: boolean): SplitLine[] {
   const matched = legs.filter((l) => l.account.type_id === typeId)
   if (matched.length === 0) return [newSplitLine()]
-  return matched.map((l) => ({
-    id: crypto.randomUUID(),
-    accountId: l.account_id,
-    amount: String(satangToBaht(signPositive ? l.amount : -l.amount)),
-    note: l.note ?? '',
-  }))
+
+  const byAccount = new Map<string, typeof matched>()
+  for (const l of matched) {
+    const group = byAccount.get(l.account_id) ?? []
+    group.push(l)
+    byAccount.set(l.account_id, group)
+  }
+
+  const result: SplitLine[] = []
+  for (const group of byAccount.values()) {
+    const sorted = [...group].sort((a, b) => a.logged_at.localeCompare(b.logged_at))
+    sorted.forEach((l, i) => {
+      result.push({
+        id: crypto.randomUUID(),
+        accountId: l.account_id,
+        amount: String(satangToBaht(signPositive ? l.amount : -l.amount)),
+        note: l.note ?? '',
+        loggedAt: l.logged_at,
+        locked: i > 0,
+      })
+    })
+  }
+  return result
 }
 
 export function TransactionFormDialog({
@@ -63,7 +82,25 @@ export function TransactionFormDialog({
   })
   const [splits, setSplits] = useState<SplitLine[]>(() => {
     if (!initial || flow === 'transfer') return [newSplitLine()]
-    return splitFromLegs(initial.legs, flow === 'income' ? 'income' : 'expense', flow === 'expense')
+    const loaded = splitFromLegs(initial.legs, flow === 'income' ? 'income' : 'expense', flow === 'expense')
+    // ทำซ้ำ (duplicate) ควรเป็นรายการใหม่ที่ยังไม่มีประวัติสะสม — รวมยอดของแต่ละหมวดเป็นบรรทัดเดียว
+    // ไม่ลากบรรทัด locked (ประวัติการ + ยอด) ของต้นฉบับมาด้วย เพราะมันไม่เคยเกิดขึ้นจริงในรายการใหม่นี้
+    if (mode === 'duplicate') {
+      const byAccount = new Map<string, SplitLine[]>()
+      for (const l of loaded) byAccount.set(l.accountId, [...(byAccount.get(l.accountId) ?? []), l])
+      return [...byAccount.entries()].map(([accountId, group]) => {
+        const totalSatang = group.reduce((sum, l) => sum + bahtToSatang(l.amount), 0)
+        return {
+          id: crypto.randomUUID(),
+          accountId,
+          amount: String(satangToBaht(totalSatang)),
+          note: group[0].note,
+          loggedAt: new Date().toISOString(),
+          locked: false,
+        }
+      })
+    }
+    return loaded
   })
 
   const destAccountInitial = useMemo(() => {
@@ -127,7 +164,12 @@ export function TransactionFormDialog({
         setError(flow === 'income' ? 'กรุณาเลือกบัญชีที่รับเงิน' : 'กรุณาเลือกบัญชีที่จ่ายเงิน')
         return
       }
-      const parsed = splits.map((s) => ({ accountId: s.accountId, amount: bahtToSatang(s.amount), note: s.note.trim() || null }))
+      const parsed = splits.map((s) => ({
+        accountId: s.accountId,
+        amount: bahtToSatang(s.amount),
+        note: s.note.trim() || null,
+        logged_at: s.loggedAt,
+      }))
       if (parsed.some((s) => !s.accountId || s.amount <= 0)) {
         setError('กรุณากรอกหมวดหมู่และจำนวนเงินให้ครบทุกบรรทัด (จำนวนเงินต้องมากกว่า 0)')
         return

@@ -25,6 +25,7 @@ export type LegInput = {
   account_id: string
   amount: number
   note?: string | null
+  logged_at?: string
 }
 
 // ผ่อนจ่ายหนี้ (เงินต้น+ดอกเบี้ย) มี leg ประเภท expense (ดอกเบี้ย) ปนอยู่ด้วย

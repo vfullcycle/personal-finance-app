@@ -12,6 +12,13 @@ export function todayLocalDateString(): string {
   return toLocalDateString(new Date())
 }
 
+// แปลง Date -> เวลาท้องถิ่น (HH:mm) สำหรับแสดงประวัติ split line ที่ auto stamp เวลา
+export function formatLocalTime(d: Date): string {
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
 // บวกจำนวนเดือนเข้ากับวันที่ (YYYY-MM-DD) ด้วยเลขจำนวนเต็มล้วน ไม่ผ่าน Date + toISOString()
 // ถ้าวันที่ปลายทางเกินจำนวนวันในเดือนนั้น (เช่น 31 ม.ค. + 1 เดือน) จะปรับให้เป็นวันสุดท้ายของเดือน
 export function addMonths(dateIso: string, months: number): string {

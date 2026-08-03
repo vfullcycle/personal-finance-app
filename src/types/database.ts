@@ -791,6 +791,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          logged_at: string
           note: string | null
           transaction_id: string
           user_id: string
@@ -800,6 +801,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          logged_at?: string
           note?: string | null
           transaction_id: string
           user_id: string
@@ -809,6 +811,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          logged_at?: string
           note?: string | null
           transaction_id?: string
           user_id?: string
