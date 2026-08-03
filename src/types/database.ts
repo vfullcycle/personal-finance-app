@@ -77,6 +77,7 @@ export type Database = {
           name: string
           opening_balance: number
           parent_id: string | null
+          sort_order: number
           subtype: string | null
           taxable: boolean
           term: string | null
@@ -103,6 +104,7 @@ export type Database = {
           name: string
           opening_balance?: number
           parent_id?: string | null
+          sort_order?: number
           subtype?: string | null
           taxable?: boolean
           term?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           name?: string
           opening_balance?: number
           parent_id?: string | null
+          sort_order?: number
           subtype?: string | null
           taxable?: boolean
           term?: string | null
@@ -408,19 +411,25 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_active: boolean
           name: string
+          sort_order: number
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_active?: boolean
           name: string
+          sort_order?: number
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_active?: boolean
           name?: string
+          sort_order?: number
           user_id?: string
         }
         Relationships: []

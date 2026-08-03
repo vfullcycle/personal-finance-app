@@ -599,6 +599,32 @@ input, select {
   border-bottom: none;
 }
 
+.sortable-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.sortable-row .item-row {
+  flex: 1;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  font-size: 1.3em;
+  color: var(--text-muted, #888);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 /* reports */
 .report-summary-grid {
   display: grid;

@@ -2,6 +2,22 @@
 
 รูปแบบ: `## <ฟีเจอร์> vX.Y — <วันที่>` ตามโปรโตคอลใน `PROJECT_BIBLE.md` §7
 
+## Auth + COA + Accounts v1.1 — 4 ส.ค. 2569
+
+- เพิ่มจัดเรียงลำดับหมวดหมู่เอง (`CategoriesTab.tsx`) ด้วยการลากวาง (drag handle "⠿") — จัดได้ทั้งลำดับหมวดหลักและหมวดย่อยในแต่ละหมวดหลัก (ลากข้ามหมวดหลักไม่ได้) เพื่อความสะดวกตอนเลือกหมวดในฟอร์มบันทึกรายการ — `CategorySelect.tsx` เรียงตามลำดับใหม่อัตโนมัติ (อ่านจาก `useAccounts` ที่เปลี่ยนไป order ตาม `sort_order` แทน `created_at`) ไม่ต้องแก้เพิ่ม
+- หมวดหมู่ใหม่ที่สร้างไปต่อท้ายกลุ่มพี่น้องเสมอ (ไม่กระโดดมาต้น) — `CategoryFormDialog.tsx` คำนวณจาก max `sort_order` ของกลุ่ม (`type_id`+`parent_id`) เดียวกัน ณ ตอนบันทึก คนย้ายหมวดไปอยู่ parent อื่นก็คำนวณใหม่ให้อัตโนมัติ
+- Migration ใหม่ (ไฟล์เดียวกับ Tags v1.1 ด้านล่าง): เพิ่ม `accounts.sort_order integer not null default 0` backfill จากลำดับ `created_at` เดิม (ไม่กระทบ view/RLS/balance trigger)
+- Dependency ใหม่: `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` — ไม่มี drag-and-drop library ในโปรเจกต์มาก่อน (เลือกเพราะยัง maintain อยู่ รองรับ touch ดี ต่างจาก react-beautiful-dnd ที่เลิกดูแลแล้ว)
+- ทดสอบผ่าน: `tsc --noEmit` clean, migration ตรวจสอบผลตรงบน remote DB จริง (137 accounts backfill ครบไม่มี null), UAT บนแอปจริงโดยผู้ทดสอบ (ลากสลับหมวดหลัก/หมวดย่อย, dropdown เรียงตามใหม่, หมวดใหม่ไปต่อท้ายถูกกลุ่ม)
+
+## Tags: management + usage v1.1 — 4 ส.ค. 2569
+
+- เพิ่มเปิด/ปิดใช้งานแท็ก (`TagsSettingsTab.tsx`) — แท็กที่ปิดใช้งานซ่อนจากตัวเลือกตอนบันทึกรายการใหม่ (`TagPicker.tsx` กรอง `is_active`) แต่ประวัติ/รายงานเดิมที่เคยผูกแท็กนี้ไว้ไม่กระทบ (หลักการเดียวกับ archive ของหมวดหมู่) ปุ่ม "ลบถาวร" เดิมยังเก็บไว้คู่กับปุ่มเปิด/ปิดใหม่ตามที่ตกลง
+- เพิ่มจัดเรียงลำดับแท็กเองด้วยการลากวาง (list เดียว ไม่มีกลุ่มย่อยเหมือนหมวดหมู่)
+- Migration ใหม่ (ไฟล์เดียวกับ COA v1.1 ด้านบน `20260804000000_category_tag_ordering.sql`): เพิ่ม `tags.sort_order integer not null default 0` (backfill จาก `created_at`) + `tags.is_active boolean not null default true` (แท็กเดิมทั้งหมด default เป็นเปิดใช้งาน)
+- แท็กใหม่ที่สร้าง ทั้งจากหน้า settings และสร้าง inline ตอนบันทึกรายการ (`TagPicker.tsx`) ไปต่อท้ายลำดับเสมอ
+- ทดสอบผ่าน: `tsc --noEmit` clean, ตรวจสอบ backfill บน remote จริง (5 tags, active ครบ), UAT บนแอปจริงโดยผู้ทดสอบ (ลากจัดเรียง, ปิด/เปิดใช้งานแล้วหาย/กลับมาในตัวเลือกถูกต้อง)
+
 ## Transactions v1.2 — 3 ส.ค. 2569
 
 - เพิ่ม "สะสมยอดเข้ารายการเดิม" ในหน้า `/transactions` (`SplitLines.tsx`, `TransactionFormDialog.tsx`) — ลดการกรอกหลาย transaction ต่อวันของหมวดเดียวกัน (เช่น มื้อเช้า/เที่ยง/เย็น ในหมวด "อาหาร"): เปิดรายการที่บันทึกไว้แล้วของวันนี้ขึ้นมาแก้ไข กดปุ่ม `+` ข้างช่องจำนวนเงิน เปิด modal ใส่รายการ (ไม่บังคับ) + จำนวนเงิน → ยอดใหม่ไปสมทบกับยอดเดิม ยังเป็น **1 transaction เดียว** (balance ตาม invariant §3.3) ไม่ใช่หลายรายการแยก

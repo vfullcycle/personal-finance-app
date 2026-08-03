@@ -1,4 +1,7 @@
 import { useMemo, useState } from 'react'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useAccounts, type AccountRow } from './useAccounts'
 import { CategoryFormDialog } from './CategoryFormDialog'
 import type { AccountType } from './constants'
@@ -9,11 +12,34 @@ const TABS: { id: AccountType; label: string }[] = [
   { id: 'equity', label: 'ทุน' },
 ]
 
+function CategoryRow({ account, isChild, onClick }: { account: AccountRow; isChild?: boolean; onClick: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: account.id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+
+  return (
+    <div ref={setNodeRef} style={style} className="sortable-row">
+      <span className="drag-handle" {...attributes} {...listeners}>
+        ⠿
+      </span>
+      <button type="button" className={`item-row${isChild ? ' item-row-child' : ''}`} onClick={onClick}>
+        <div>
+          <div className="item-row-name">
+            {account.name}
+            {account.cashflow_class && <span className="badge badge-muted">{cashflowLabel(account.cashflow_class)}</span>}
+            {account.taxable && <span className="badge">{account.income_type ?? 'ต้องเสียภาษี'}</span>}
+          </div>
+        </div>
+      </button>
+    </div>
+  )
+}
+
 export function CategoriesTab() {
   const [activeTab, setActiveTab] = useState<AccountType>('income')
   const [showArchived, setShowArchived] = useState(false)
   const [editing, setEditing] = useState<AccountRow | 'new' | null>(null)
-  const { accounts, loading, error, refresh } = useAccounts(['income', 'expense', 'equity'])
+  const { accounts, loading, error, refresh, reorder } = useAccounts(['income', 'expense', 'equity'])
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   const visible = useMemo(() => {
     const filtered = accounts.filter((a) => a.type_id === activeTab && a.is_active !== showArchived)
@@ -71,37 +97,54 @@ export function CategoriesTab() {
       )}
 
       <div className="card">
-        {visible.topLevel.map((cat) => (
-          <div key={cat.id}>
-            <button type="button" className="item-row" onClick={() => setEditing(cat)}>
-              <div>
-                <div className="item-row-name">
-                  {cat.name}
-                  {cat.cashflow_class && <span className="badge badge-muted">{cashflowLabel(cat.cashflow_class)}</span>}
-                  {cat.taxable && <span className="badge">{cat.income_type ?? 'ต้องเสียภาษี'}</span>}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(e: DragEndEvent) => {
+            const { active, over } = e
+            if (!over || active.id === over.id) return
+            const ids = visible.topLevel.map((a) => a.id)
+            const oldIndex = ids.indexOf(String(active.id))
+            const newIndex = ids.indexOf(String(over.id))
+            reorder(arrayMove(ids, oldIndex, newIndex))
+          }}
+        >
+          <SortableContext items={visible.topLevel.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+            {visible.topLevel.map((cat) => {
+              const children = visible.childrenByParent.get(cat.id) ?? []
+              return (
+                <div key={cat.id}>
+                  <CategoryRow account={cat} onClick={() => setEditing(cat)} />
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(e: DragEndEvent) => {
+                      const { active, over } = e
+                      if (!over || active.id === over.id) return
+                      const ids = children.map((a) => a.id)
+                      const oldIndex = ids.indexOf(String(active.id))
+                      const newIndex = ids.indexOf(String(over.id))
+                      reorder(arrayMove(ids, oldIndex, newIndex))
+                    }}
+                  >
+                    <SortableContext items={children.map((a) => a.id)} strategy={verticalListSortingStrategy}>
+                      {children.map((child) => (
+                        <CategoryRow key={child.id} account={child} isChild onClick={() => setEditing(child)} />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
                 </div>
-              </div>
-            </button>
-            {(visible.childrenByParent.get(cat.id) ?? []).map((child) => (
-              <button
-                key={child.id}
-                type="button"
-                className="item-row item-row-child"
-                onClick={() => setEditing(child)}
-              >
-                <div>
-                  <div className="item-row-name">{child.name}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        ))}
+              )
+            })}
+          </SortableContext>
+        </DndContext>
       </div>
 
       {editing && (
         <CategoryFormDialog
           typeId={activeTab}
           parentOptions={accounts.filter((a) => a.type_id === activeTab && a.is_active)}
+          siblingAccounts={accounts}
           initial={editing === 'new' ? null : editing}
           onClose={() => setEditing(null)}
           onSaved={handleSaved}

@@ -11,12 +11,14 @@ const INCOME_TYPES = Object.keys(INCOME_TYPE_LABEL) as IncomeType[]
 export function CategoryFormDialog({
   typeId,
   parentOptions,
+  siblingAccounts,
   initial,
   onClose,
   onSaved,
 }: {
   typeId: AccountType
   parentOptions: AccountRow[]
+  siblingAccounts: AccountRow[]
   initial: AccountRow | null
   onClose: () => void
   onSaved: () => void
@@ -46,11 +48,23 @@ export function CategoryFormDialog({
     }
 
     setSubmitting(true)
+
+    // ต่อท้ายกลุ่มพี่น้องใหม่เสมอ (ไม่กระโดดมาต้น) — เฉพาะรายการใหม่ หรือย้ายไปคนละ parent
+    const newParentId = parentId || null
+    const parentChanged = isEdit && (initial.parent_id ?? null) !== newParentId
+    const needsSortOrder = !isEdit || parentChanged
+    const siblingSortOrder = needsSortOrder
+      ? siblingAccounts
+          .filter((a) => a.type_id === typeId && (a.parent_id ?? null) === newParentId)
+          .reduce((max, a) => Math.max(max, a.sort_order), -1) + 1
+      : undefined
+
     const payload = {
       user_id: user.id,
       type_id: typeId,
       name: name.trim(),
-      parent_id: parentId || null,
+      parent_id: newParentId,
+      ...(needsSortOrder ? { sort_order: siblingSortOrder } : {}),
       taxable: typeId === 'income' ? taxable : false,
       income_type: typeId === 'income' && taxable && incomeType ? incomeType : null,
       cashflow_class: typeId === 'expense' && cashflowClass ? cashflowClass : null,

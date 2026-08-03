@@ -25,7 +25,8 @@ export function TagPicker({ selected, onChange }: { selected: string[]; onChange
     }
 
     setCreating(true)
-    const { data } = await supabase.from('tags').insert({ user_id: user.id, name }).select().single()
+    const sortOrder = tags.reduce((max, t) => Math.max(max, t.sort_order), -1) + 1
+    const { data } = await supabase.from('tags').insert({ user_id: user.id, name, sort_order: sortOrder }).select().single()
     setCreating(false)
     if (data) {
       setNewTagName('')
@@ -34,12 +35,14 @@ export function TagPicker({ selected, onChange }: { selected: string[]; onChange
     }
   }
 
+  const activeTags = tags.filter((t) => t.is_active)
+
   return (
     <div className="field">
       <label>แท็ก/มิติ (ถ้ามี)</label>
-      {tags.length > 0 && (
+      {activeTags.length > 0 && (
         <div className="radio-group">
-          {tags.map((t) => (
+          {activeTags.map((t) => (
             <button
               key={t.id}
               type="button"
